@@ -73,14 +73,11 @@ class TelegramWebhookLog(Document):
 
 		state = frappe.get_doc("Telegram Conversation State", state_name)
 
-		if state.handler == "leave":
-			from bwh_bot.handlers.leave import handle_date_text_input
+		from bwh_bot.conversation import CONVERSATION_HANDLERS
 
-			handle_date_text_input(state, self.chat_id, self.message_text)
-		elif state.handler == "wfh":
-			from bwh_bot.handlers.wfh import handle_wfh_date_text_input
-
-			handle_wfh_date_text_input(state, self.chat_id, self.message_text)
+		handler = CONVERSATION_HANDLERS.get(state.handler)
+		if handler:
+			handler.handle_text_input(state, self.chat_id, self.message_text)
 
 	def handle_callback_query(self):
 		frappe_user = get_mapped_user(self.telegram_user_id, self.telegram_username)

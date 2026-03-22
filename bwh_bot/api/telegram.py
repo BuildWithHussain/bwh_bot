@@ -26,7 +26,19 @@ def register_callback(prefix):
 
 
 # import handlers to register them
-from bwh_bot.handlers import leave, ping, wfh  # noqa: F401, E402
+from bwh_bot.handlers import ping  # noqa: F401, E402
+
+# import conversation handlers — auto-registers via __init_subclass__
+from bwh_bot.handlers import leave, wfh  # noqa: F401, E402
+
+# register conversation handlers into COMMAND_HANDLERS and CALLBACK_HANDLERS
+from bwh_bot.conversation import CONVERSATION_HANDLERS
+
+for _handler in CONVERSATION_HANDLERS.values():
+	if _handler.command:
+		register_command(_handler.command, _handler.command_description)(_handler.handle_command)
+	if _handler.callback_prefix:
+		register_callback(_handler.callback_prefix)(_handler.handle_callback)
 
 
 @frappe.whitelist(allow_guest=True)
