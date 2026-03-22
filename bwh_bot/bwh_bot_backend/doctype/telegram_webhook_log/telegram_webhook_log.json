@@ -1,0 +1,144 @@
+{
+	"actions": [],
+	"autoname": "autoincrement",
+	"creation": "2026-03-22 00:00:00.000000",
+	"doctype": "DocType",
+	"engine": "MyISAM",
+	"field_order": [
+		"update_type",
+		"chat_id",
+		"chat_title",
+		"column_break_keys",
+		"telegram_user_id",
+		"telegram_username",
+		"telegram_user_name",
+		"section_break_message",
+		"command",
+		"message_text",
+		"column_break_message",
+		"message_id",
+		"message_date",
+		"section_break_payload",
+		"payload"
+	],
+	"fields": [
+		{
+			"fieldname": "update_type",
+			"fieldtype": "Data",
+			"in_list_view": 1,
+			"in_standard_filter": 1,
+			"label": "Update Type",
+			"read_only": 1
+		},
+		{
+			"fieldname": "chat_id",
+			"fieldtype": "Data",
+			"in_list_view": 1,
+			"in_standard_filter": 1,
+			"label": "Chat ID",
+			"read_only": 1
+		},
+		{
+			"fieldname": "chat_title",
+			"fieldtype": "Data",
+			"in_list_view": 1,
+			"label": "Chat Title",
+			"read_only": 1
+		},
+		{
+			"fieldname": "column_break_keys",
+			"fieldtype": "Column Break"
+		},
+		{
+			"fieldname": "telegram_user_id",
+			"fieldtype": "Data",
+			"in_standard_filter": 1,
+			"label": "Telegram User ID",
+			"read_only": 1
+		},
+		{
+			"fieldname": "telegram_username",
+			"fieldtype": "Data",
+			"in_list_view": 1,
+			"in_standard_filter": 1,
+			"label": "Telegram Username",
+			"read_only": 1
+		},
+		{
+			"fieldname": "telegram_user_name",
+			"fieldtype": "Data",
+			"label": "Telegram User Name",
+			"read_only": 1
+		},
+		{
+			"fieldname": "section_break_message",
+			"fieldtype": "Section Break",
+			"label": "Message"
+		},
+		{
+			"fieldname": "command",
+			"fieldtype": "Data",
+			"in_list_view": 1,
+			"in_standard_filter": 1,
+			"label": "Command",
+			"read_only": 1
+		},
+		{
+			"fieldname": "message_text",
+			"fieldtype": "Small Text",
+			"label": "Message Text",
+			"read_only": 1
+		},
+		{
+			"fieldname": "column_break_message",
+			"fieldtype": "Column Break"
+		},
+		{
+			"fieldname": "message_id",
+			"fieldtype": "Data",
+			"label": "Message ID",
+			"read_only": 1
+		},
+		{
+			"fieldname": "message_date",
+			"fieldtype": "Datetime",
+			"label": "Message Date",
+			"read_only": 1
+		},
+		{
+			"fieldname": "section_break_payload",
+			"fieldtype": "Section Break",
+			"collapsible": 1,
+			"label": "Raw Payload"
+		},
+		{
+			"fieldname": "payload",
+			"fieldtype": "JSON",
+			"label": "Payload",
+			"read_only": 1
+		}
+	],
+	"in_create": 1,
+	"index_web_pages_for_search": 0,
+	"links": [],
+	"modified": "2026-03-22 00:00:00.000000",
+	"modified_by": "Administrator",
+	"module": "BWH Bot Backend",
+	"name": "Telegram Webhook Log",
+	"naming_rule": "Autoincrement",
+	"owner": "Administrator",
+	"permissions": [
+		{
+			"delete": 1,
+			"email": 1,
+			"print": 1,
+			"read": 1,
+			"report": 1,
+			"role": "System Manager",
+			"share": 1
+		}
+	],
+	"sort_field": "creation",
+	"sort_order": "DESC",
+	"states": []
+}
