@@ -26,7 +26,7 @@ def register_callback(prefix):
 
 
 # import handlers to register them
-from bwh_bot.handlers import leave, ping  # noqa: F401, E402
+from bwh_bot.handlers import leave, ping, wfh  # noqa: F401, E402
 
 
 @frappe.whitelist(allow_guest=True)
