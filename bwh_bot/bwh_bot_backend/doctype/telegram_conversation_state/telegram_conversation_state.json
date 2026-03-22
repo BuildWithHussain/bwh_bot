@@ -1,0 +1,92 @@
+{
+	"actions": [],
+	"autoname": "autoincrement",
+	"creation": "2026-03-22 00:00:00.000000",
+	"doctype": "DocType",
+	"engine": "InnoDB",
+	"field_order": [
+		"chat_id",
+		"telegram_user_id",
+		"handler",
+		"step",
+		"column_break_state",
+		"expires_at",
+		"is_active",
+		"section_break_data",
+		"data"
+	],
+	"fields": [
+		{
+			"fieldname": "chat_id",
+			"fieldtype": "Data",
+			"in_list_view": 1,
+			"label": "Chat ID",
+			"reqd": 1
+		},
+		{
+			"fieldname": "telegram_user_id",
+			"fieldtype": "Data",
+			"in_list_view": 1,
+			"label": "Telegram User ID",
+			"reqd": 1
+		},
+		{
+			"fieldname": "handler",
+			"fieldtype": "Data",
+			"in_list_view": 1,
+			"label": "Handler",
+			"reqd": 1
+		},
+		{
+			"fieldname": "step",
+			"fieldtype": "Data",
+			"in_list_view": 1,
+			"label": "Step",
+			"reqd": 1
+		},
+		{
+			"fieldname": "column_break_state",
+			"fieldtype": "Column Break"
+		},
+		{
+			"fieldname": "expires_at",
+			"fieldtype": "Datetime",
+			"label": "Expires At"
+		},
+		{
+			"fieldname": "is_active",
+			"fieldtype": "Check",
+			"default": "1",
+			"label": "Is Active"
+		},
+		{
+			"fieldname": "section_break_data",
+			"fieldtype": "Section Break",
+			"label": "Data"
+		},
+		{
+			"fieldname": "data",
+			"fieldtype": "JSON",
+			"label": "Data"
+		}
+	],
+	"index_web_pages_for_search": 0,
+	"links": [],
+	"modified": "2026-03-22 00:00:00.000000",
+	"modified_by": "Administrator",
+	"module": "BWH Bot Backend",
+	"name": "Telegram Conversation State",
+	"naming_rule": "Autoincrement",
+	"owner": "Administrator",
+	"permissions": [
+		{
+			"delete": 1,
+			"read": 1,
+			"role": "System Manager",
+			"write": 1
+		}
+	],
+	"sort_field": "creation",
+	"sort_order": "DESC",
+	"states": []
+}

@@ -4,18 +4,29 @@ from datetime import datetime
 import frappe
 
 COMMAND_HANDLERS = {}
+CALLBACK_HANDLERS = {}
 
 
-def register_command(command):
+def register_command(command, description=None):
 	def decorator(fn):
 		COMMAND_HANDLERS[command] = fn
+		if description:
+			fn._description = description
+		return fn
+
+	return decorator
+
+
+def register_callback(prefix):
+	def decorator(fn):
+		CALLBACK_HANDLERS[prefix] = fn
 		return fn
 
 	return decorator
 
 
 # import handlers to register them
-from bwh_bot.handlers import ping  # noqa: F401, E402
+from bwh_bot.handlers import leave, ping  # noqa: F401, E402
 
 
 @frappe.whitelist(allow_guest=True)
@@ -31,6 +42,13 @@ def hook(**kwargs):
 		frappe.set_user("Administrator")
 		data = frappe.request.get_json(force=True)
 
+		# Handle callback_query updates
+		callback_query = data.get("callback_query")
+		if callback_query:
+			_handle_callback_query(data, callback_query)
+			return
+
+		# Handle message updates
 		message = data.get("message") or data.get("edited_message")
 		if not message:
 			return
@@ -67,3 +85,30 @@ def hook(**kwargs):
 		frappe.log_error("BWH Bot Webhook Error")
 	finally:
 		frappe.set_user("Guest")
+
+
+def _handle_callback_query(data, callback_query):
+	message = callback_query.get("message", {})
+	chat = message.get("chat", {})
+	telegram_user = callback_query.get("from", {})
+
+	message_date = None
+	if message.get("date"):
+		message_date = datetime.fromtimestamp(message["date"])
+
+	doc = frappe.get_doc({
+		"doctype": "Telegram Webhook Log",
+		"update_type": "callback_query",
+		"chat_id": str(chat.get("id", "")),
+		"chat_title": chat.get("title", ""),
+		"telegram_user_id": str(telegram_user.get("id", "")),
+		"telegram_username": telegram_user.get("username", ""),
+		"telegram_user_name": f"{telegram_user.get('first_name', '')} {telegram_user.get('last_name', '')}".strip(),
+		"callback_query_id": callback_query.get("id", ""),
+		"callback_data": callback_query.get("data", ""),
+		"message_id": str(message.get("message_id", "")),
+		"message_date": message_date,
+		"payload": json.dumps(data, indent=2),
+	})
+	doc.insert(ignore_permissions=True)
+	frappe.db.commit()

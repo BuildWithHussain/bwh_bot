@@ -18,6 +18,9 @@
 		"column_break_message",
 		"message_id",
 		"message_date",
+		"section_break_callback",
+		"callback_query_id",
+		"callback_data",
 		"section_break_payload",
 		"payload"
 	],
@@ -103,6 +106,25 @@
 			"fieldname": "message_date",
 			"fieldtype": "Datetime",
 			"label": "Message Date",
+			"read_only": 1
+		},
+		{
+			"fieldname": "section_break_callback",
+			"fieldtype": "Section Break",
+			"label": "Callback",
+			"depends_on": "eval:doc.update_type === 'callback_query'"
+		},
+		{
+			"fieldname": "callback_query_id",
+			"fieldtype": "Data",
+			"label": "Callback Query ID",
+			"read_only": 1
+		},
+		{
+			"fieldname": "callback_data",
+			"fieldtype": "Data",
+			"in_list_view": 1,
+			"label": "Callback Data",
 			"read_only": 1
 		},
 		{

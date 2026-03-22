@@ -11,6 +11,7 @@
 		"sb_user_mappings",
 		"user_mappings",
 		"sb_actions",
+		"webhook_url",
 		"register_webhook"
 	],
 	"fields": [
@@ -51,6 +52,12 @@
 			"fieldname": "sb_actions",
 			"fieldtype": "Section Break",
 			"label": "Actions"
+		},
+		{
+			"fieldname": "webhook_url",
+			"fieldtype": "Data",
+			"label": "Webhook URL",
+			"description": "Public URL for the webhook (e.g. tunnel URL). Leave blank to use site URL."
 		},
 		{
 			"fieldname": "register_webhook",
