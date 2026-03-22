@@ -11,7 +11,10 @@ def register_command(command, description=None):
 	def decorator(fn):
 		COMMAND_HANDLERS[command] = fn
 		if description:
-			fn._description = description
+			try:
+				fn._description = description
+			except AttributeError:
+				fn.__func__._description = description
 		return fn
 
 	return decorator
