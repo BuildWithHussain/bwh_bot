@@ -1,0 +1,37 @@
+{
+	"actions": [],
+	"creation": "2026-03-22 00:00:00.000000",
+	"doctype": "DocType",
+	"engine": "InnoDB",
+	"field_order": [
+		"chat_id",
+		"label"
+	],
+	"fields": [
+		{
+			"fieldname": "chat_id",
+			"fieldtype": "Data",
+			"in_list_view": 1,
+			"label": "Chat ID",
+			"reqd": 1
+		},
+		{
+			"fieldname": "label",
+			"fieldtype": "Data",
+			"in_list_view": 1,
+			"label": "Label"
+		}
+	],
+	"index_web_pages_for_search": 0,
+	"istable": 1,
+	"links": [],
+	"modified": "2026-03-22 00:00:00.000000",
+	"modified_by": "Administrator",
+	"module": "BWH Bot Backend",
+	"name": "BWH Bot Whitelisted Chat",
+	"owner": "Administrator",
+	"permissions": [],
+	"sort_field": "creation",
+	"sort_order": "DESC",
+	"states": []
+}

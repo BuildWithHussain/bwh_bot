@@ -1,0 +1,84 @@
+{
+	"actions": [],
+	"creation": "2026-03-22 00:00:00.000000",
+	"doctype": "DocType",
+	"engine": "InnoDB",
+	"field_order": [
+		"bot_token",
+		"webhook_secret",
+		"sb_whitelisted_chats",
+		"whitelisted_chats",
+		"sb_user_mappings",
+		"user_mappings",
+		"sb_actions",
+		"register_webhook"
+	],
+	"fields": [
+		{
+			"fieldname": "bot_token",
+			"fieldtype": "Password",
+			"label": "Bot Token",
+			"reqd": 1
+		},
+		{
+			"fieldname": "webhook_secret",
+			"fieldtype": "Data",
+			"label": "Webhook Secret"
+		},
+		{
+			"fieldname": "sb_whitelisted_chats",
+			"fieldtype": "Section Break",
+			"label": "Whitelisted Chats"
+		},
+		{
+			"fieldname": "whitelisted_chats",
+			"fieldtype": "Table",
+			"label": "Whitelisted Chats",
+			"options": "BWH Bot Whitelisted Chat"
+		},
+		{
+			"fieldname": "sb_user_mappings",
+			"fieldtype": "Section Break",
+			"label": "User Mappings"
+		},
+		{
+			"fieldname": "user_mappings",
+			"fieldtype": "Table",
+			"label": "User Mappings",
+			"options": "BWH Bot User Mapping"
+		},
+		{
+			"fieldname": "sb_actions",
+			"fieldtype": "Section Break",
+			"label": "Actions"
+		},
+		{
+			"fieldname": "register_webhook",
+			"fieldtype": "Button",
+			"label": "Register Webhook"
+		}
+	],
+	"index_web_pages_for_search": 0,
+	"issingle": 1,
+	"links": [],
+	"modified": "2026-03-22 00:00:00.000000",
+	"modified_by": "Administrator",
+	"module": "BWH Bot Backend",
+	"name": "BWH Bot Settings",
+	"owner": "Administrator",
+	"permissions": [
+		{
+			"create": 1,
+			"delete": 1,
+			"email": 1,
+			"print": 1,
+			"read": 1,
+			"role": "System Manager",
+			"share": 1,
+			"write": 1
+		}
+	],
+	"sort_field": "creation",
+	"sort_order": "DESC",
+	"states": []
+}
