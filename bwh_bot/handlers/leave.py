@@ -21,10 +21,11 @@ class LeaveConversation(BotConversation):
 	def on_start(self, message, state, employee):
 		chat_id = message["chat"]["id"]
 		message_id = message["message_id"]
+		message_thread_id = message.get("message_thread_id")
 
 		leave_types = get_leave_types_for_employee(employee)
 		if not leave_types:
-			send_message(chat_id, "You have no leave allocations for the current period.", reply_to_message_id=message_id)
+			send_message(chat_id, "You have no leave allocations for the current period.", reply_to_message_id=message_id, message_thread_id=message_thread_id)
 			self.clear_state(state)
 			return
 
@@ -37,6 +38,7 @@ class LeaveConversation(BotConversation):
 			parse_mode="HTML",
 			reply_markup=make_keyboard(buttons, nav_buttons(self.callback_prefix, show_back=False)),
 			reply_to_message_id=message_id,
+			message_thread_id=message_thread_id,
 		)
 
 	def on_action(self, action, value, state, ctx):
@@ -110,6 +112,9 @@ class LeaveConversation(BotConversation):
 			)
 
 	def on_text_input(self, state, chat_id, date_str):
+		data = self.get_data(state)
+		message_thread_id = data.get("message_thread_id")
+
 		if state.step == "awaiting_from_date":
 			self.update_state(state, "select_to_date", {"from_date": date_str})
 			data = self.get_data(state)
@@ -118,6 +123,7 @@ class LeaveConversation(BotConversation):
 				f"<b>Leave Type:</b> {data['leave_type']}\n<b>From:</b> {date_str}\n\nSelect <b>to date</b>:",
 				parse_mode="HTML",
 				reply_markup=make_keyboard(to_date_buttons(self.callback_prefix, date_str), nav_buttons(self.callback_prefix)),
+				message_thread_id=message_thread_id,
 			)
 
 		elif state.step == "awaiting_to_date":
@@ -136,6 +142,7 @@ class LeaveConversation(BotConversation):
 				),
 				parse_mode="HTML",
 				reply_markup=make_keyboard(confirm_buttons(self.callback_prefix)),
+				message_thread_id=message_thread_id,
 			)
 
 	def _build_header(self, data):

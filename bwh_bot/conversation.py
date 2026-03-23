@@ -92,6 +92,7 @@ class BotConversation:
 	def handle_command(self, message):
 		chat_id = message["chat"]["id"]
 		message_id = message["message_id"]
+		message_thread_id = message.get("message_thread_id")
 
 		try:
 			set_message_reaction(chat_id, message_id, "👍")
@@ -100,11 +101,11 @@ class BotConversation:
 
 		employee = get_employee_from_user(frappe.session.user)
 		if not employee:
-			send_message(chat_id, "You are not linked to any active employee record.", reply_to_message_id=message_id)
+			send_message(chat_id, "You are not linked to any active employee record.", reply_to_message_id=message_id, message_thread_id=message_thread_id)
 			return
 
 		state = self.get_or_create_state(chat_id, message["from"]["id"])
-		self.update_state(state, "start", {"employee": employee})
+		self.update_state(state, "start", {"employee": employee, "message_thread_id": message_thread_id})
 		self.on_start(message, state, employee)
 
 	# --- Callback entry point ---
@@ -176,6 +177,9 @@ class BotConversation:
 
 	def handle_text_input(self, state, chat_id, text):
 		text = text.strip()
+		data = self.get_data(state)
+		message_thread_id = data.get("message_thread_id")
+
 		try:
 			parsed = frappe.utils.getdate(text, parse_day_first=True)
 			if not parsed:
@@ -186,6 +190,7 @@ class BotConversation:
 				chat_id,
 				"Could not parse that date. Try formats like <code>25 Mar 2026</code>, <code>25-03-2026</code>, or <code>2026-03-25</code>.",
 				parse_mode="HTML",
+				message_thread_id=message_thread_id,
 			)
 			return
 

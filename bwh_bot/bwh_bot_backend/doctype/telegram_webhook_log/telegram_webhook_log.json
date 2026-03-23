@@ -17,6 +17,7 @@
 		"message_text",
 		"column_break_message",
 		"message_id",
+		"message_thread_id",
 		"message_date",
 		"section_break_callback",
 		"callback_query_id",
@@ -100,6 +101,12 @@
 			"fieldname": "message_id",
 			"fieldtype": "Data",
 			"label": "Message ID",
+			"read_only": 1
+		},
+		{
+			"fieldname": "message_thread_id",
+			"fieldtype": "Data",
+			"label": "Message Thread ID",
 			"read_only": 1
 		},
 		{

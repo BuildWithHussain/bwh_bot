@@ -16,6 +16,7 @@ class WFHConversation(BotConversation):
 	def on_start(self, message, state, employee):
 		chat_id = message["chat"]["id"]
 		message_id = message["message_id"]
+		message_thread_id = message.get("message_thread_id")
 
 		self.update_state(state, "select_from_date")
 		send_message(
@@ -27,6 +28,7 @@ class WFHConversation(BotConversation):
 				nav_buttons(self.callback_prefix, show_back=False),
 			),
 			reply_to_message_id=message_id,
+			message_thread_id=message_thread_id,
 		)
 
 	def on_action(self, action, value, state, ctx):
@@ -86,6 +88,9 @@ class WFHConversation(BotConversation):
 			)
 
 	def on_text_input(self, state, chat_id, date_str):
+		data = self.get_data(state)
+		message_thread_id = data.get("message_thread_id")
+
 		if state.step == "awaiting_from_date":
 			self.update_state(state, "select_to_date", {"from_date": date_str})
 			send_message(
@@ -93,6 +98,7 @@ class WFHConversation(BotConversation):
 				f"<b>{self.title}</b>\n<b>From:</b> {date_str}\n\nSelect <b>to date</b>:",
 				parse_mode="HTML",
 				reply_markup=make_keyboard(to_date_buttons(self.callback_prefix, date_str), nav_buttons(self.callback_prefix)),
+				message_thread_id=message_thread_id,
 			)
 
 		elif state.step == "awaiting_to_date":
@@ -110,6 +116,7 @@ class WFHConversation(BotConversation):
 				),
 				parse_mode="HTML",
 				reply_markup=make_keyboard(self._summary_buttons(data)),
+				message_thread_id=message_thread_id,
 			)
 
 	def _build_header(self, data):

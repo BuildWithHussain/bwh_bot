@@ -91,6 +91,7 @@ def hook(**kwargs):
 			"command": command,
 			"message_text": text,
 			"message_id": str(message.get("message_id", "")),
+			"message_thread_id": str(message["message_thread_id"]) if message.get("message_thread_id") else None,
 			"message_date": message_date,
 			"payload": json.dumps(data, indent=2),
 		})
@@ -122,6 +123,7 @@ def _handle_callback_query(data, callback_query):
 		"callback_query_id": callback_query.get("id", ""),
 		"callback_data": callback_query.get("data", ""),
 		"message_id": str(message.get("message_id", "")),
+		"message_thread_id": str(message["message_thread_id"]) if message.get("message_thread_id") else None,
 		"message_date": message_date,
 		"payload": json.dumps(data, indent=2),
 	})
