@@ -184,6 +184,7 @@ class LeaveConversation(BotConversation):
 		chat_id, message_id, cqid = ctx["chat_id"], ctx["message_id"], ctx["callback_query_id"]
 
 		try:
+			frappe.db.savepoint("before_leave_application")
 			leave_app = frappe.get_doc({
 				"doctype": "Leave Application",
 				"employee": data["employee"],
@@ -210,6 +211,7 @@ class LeaveConversation(BotConversation):
 				parse_mode="HTML",
 			)
 		except Exception as e:
+			frappe.db.rollback(save_point="before_leave_application")
 			answer_callback_query(cqid, "Failed to create leave application.", show_alert=True)
 			edit_message_text(chat_id, message_id, f"Failed to create leave application:\n<code>{e}</code>", parse_mode="HTML")
 
