@@ -1,0 +1,22 @@
+[
+	{
+		"doctype": "Petty Cash Category",
+		"name": "Internet",
+		"category_name": "Internet"
+	},
+	{
+		"doctype": "Petty Cash Category",
+		"name": "Food",
+		"category_name": "Food"
+	},
+	{
+		"doctype": "Petty Cash Category",
+		"name": "Stationery",
+		"category_name": "Stationery"
+	},
+	{
+		"doctype": "Petty Cash Category",
+		"name": "Travel",
+		"category_name": "Travel"
+	}
+]

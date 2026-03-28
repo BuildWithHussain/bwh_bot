@@ -180,21 +180,26 @@ class BotConversation:
 		data = self.get_data(state)
 		message_thread_id = data.get("message_thread_id")
 
-		try:
-			parsed = frappe.utils.getdate(text, parse_day_first=True)
-			if not parsed:
-				raise ValueError("Could not parse date")
-			date_str = str(parsed)
-		except Exception:
-			send_message(
-				chat_id,
-				"Could not parse that date. Try formats like <code>25 Mar 2026</code>, <code>25-03-2026</code>, or <code>2026-03-25</code>.",
-				parse_mode="HTML",
-				message_thread_id=message_thread_id,
-			)
-			return
+		# Date-related awaiting steps: parse as date
+		if state.step in ("awaiting_from_date", "awaiting_to_date", "awaiting_custom_date"):
+			try:
+				parsed = frappe.utils.getdate(text, parse_day_first=True)
+				if not parsed:
+					raise ValueError("Could not parse date")
+				date_str = str(parsed)
+			except Exception:
+				send_message(
+					chat_id,
+					"Could not parse that date. Try formats like <code>25 Mar 2026</code>, <code>25-03-2026</code>, or <code>2026-03-25</code>.",
+					parse_mode="HTML",
+					message_thread_id=message_thread_id,
+				)
+				return
 
-		self.on_text_input(state, chat_id, date_str)
+			self.on_text_input(state, chat_id, date_str)
+		else:
+			# Non-date steps: pass raw text to subclass
+			self.on_raw_text_input(state, chat_id, text)
 
 	# --- Hooks for subclasses ---
 
@@ -208,6 +213,10 @@ class BotConversation:
 		pass
 
 	def on_text_input(self, state, chat_id, date_str):
+		pass
+
+	def on_raw_text_input(self, state, chat_id, text):
+		"""Override in subclasses that need non-date text input."""
 		pass
 
 	# --- Helpers ---

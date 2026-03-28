@@ -57,6 +57,26 @@ def to_date_buttons(prefix, from_date):
 	]
 
 
+def expense_date_buttons(prefix):
+	"""Date buttons looking backward for expense date selection."""
+	today = frappe.utils.today()
+	yesterday = frappe.utils.add_days(today, -1)
+	two_ago = frappe.utils.add_days(today, -2)
+	three_ago = frappe.utils.add_days(today, -3)
+
+	return [
+		[
+			InlineKeyboardButton(f"Today ({today})", callback_data=f"{prefix}:date:{today}"),
+			InlineKeyboardButton(f"Yesterday ({yesterday})", callback_data=f"{prefix}:date:{yesterday}"),
+		],
+		[
+			InlineKeyboardButton(f"2 days ago ({two_ago})", callback_data=f"{prefix}:date:{two_ago}"),
+			InlineKeyboardButton(f"3 days ago ({three_ago})", callback_data=f"{prefix}:date:{three_ago}"),
+		],
+		[InlineKeyboardButton("Custom date...", callback_data=f"{prefix}:custom_date")],
+	]
+
+
 def nav_buttons(prefix, show_back=True):
 	buttons = []
 	if show_back:

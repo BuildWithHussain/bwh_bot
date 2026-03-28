@@ -10,6 +10,9 @@
 		"whitelisted_chats",
 		"sb_user_mappings",
 		"user_mappings",
+		"sb_petty_cash",
+		"default_cash_account",
+		"default_company",
 		"sb_actions",
 		"webhook_url",
 		"register_webhook"
@@ -47,6 +50,25 @@
 			"fieldtype": "Table",
 			"label": "User Mappings",
 			"options": "BWH Bot User Mapping"
+		},
+		{
+			"fieldname": "sb_petty_cash",
+			"fieldtype": "Section Break",
+			"label": "Petty Cash Settings"
+		},
+		{
+			"fieldname": "default_cash_account",
+			"fieldtype": "Link",
+			"label": "Default Cash Account",
+			"options": "Account",
+			"description": "Cash In Hand account used for monthly journal entry (credit side)"
+		},
+		{
+			"fieldname": "default_company",
+			"fieldtype": "Link",
+			"label": "Default Company",
+			"options": "Company",
+			"description": "Company for journal entry creation"
 		},
 		{
 			"fieldname": "sb_actions",

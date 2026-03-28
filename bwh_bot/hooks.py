@@ -141,23 +141,18 @@ doc_events = {
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
-# 	"all": [
-# 		"bwh_bot.tasks.all"
-# 	],
-# 	"daily": [
-# 		"bwh_bot.tasks.daily"
-# 	],
-# 	"hourly": [
-# 		"bwh_bot.tasks.hourly"
-# 	],
-# 	"weekly": [
-# 		"bwh_bot.tasks.weekly"
-# 	],
-# 	"monthly": [
-# 		"bwh_bot.tasks.monthly"
-# 	],
-# }
+scheduler_events = {
+	"monthly": [
+		"bwh_bot.tasks.create_monthly_petty_cash_journal_entry"
+	],
+}
+
+fixtures = [
+	{
+		"dt": "Petty Cash Category",
+		"filters": [["category_name", "in", ["Internet", "Food", "Stationery", "Travel"]]],
+	}
+]
 
 # Testing
 # -------

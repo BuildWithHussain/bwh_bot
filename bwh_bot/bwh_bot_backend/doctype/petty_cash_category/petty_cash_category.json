@@ -1,0 +1,48 @@
+{
+	"actions": [],
+	"autoname": "field:category_name",
+	"creation": "2026-03-28 00:00:00.000000",
+	"doctype": "DocType",
+	"engine": "InnoDB",
+	"field_order": [
+		"category_name",
+		"account"
+	],
+	"fields": [
+		{
+			"fieldname": "category_name",
+			"fieldtype": "Data",
+			"in_list_view": 1,
+			"label": "Category Name",
+			"reqd": 1,
+			"unique": 1
+		},
+		{
+			"fieldname": "account",
+			"fieldtype": "Link",
+			"in_list_view": 1,
+			"label": "Account",
+			"options": "Account"
+		}
+	],
+	"index_web_pages_for_search": 0,
+	"links": [],
+	"modified": "2026-03-28 00:00:00.000000",
+	"modified_by": "Administrator",
+	"module": "BWH Bot Backend",
+	"name": "Petty Cash Category",
+	"naming_rule": "By fieldname",
+	"owner": "Administrator",
+	"permissions": [
+		{
+			"create": 1,
+			"delete": 1,
+			"read": 1,
+			"role": "System Manager",
+			"write": 1
+		}
+	],
+	"sort_field": "creation",
+	"sort_order": "ASC",
+	"states": []
+}

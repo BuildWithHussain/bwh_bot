@@ -32,7 +32,7 @@ def register_callback(prefix):
 from bwh_bot.handlers import ping  # noqa: F401, E402
 
 # import conversation handlers — auto-registers via __init_subclass__
-from bwh_bot.handlers import leave, wfh  # noqa: F401, E402
+from bwh_bot.handlers import leave, petty_cash, wfh  # noqa: F401, E402
 
 # register conversation handlers into COMMAND_HANDLERS and CALLBACK_HANDLERS
 from bwh_bot.conversation import CONVERSATION_HANDLERS

@@ -57,7 +57,7 @@ class TelegramWebhookLog(Document):
 				"chat_id": str(self.chat_id),
 				"telegram_user_id": str(self.telegram_user_id),
 				"is_active": 1,
-				"step": ["in", ["awaiting_from_date", "awaiting_to_date"]],
+				"step": ["like", "awaiting_%"],
 			},
 			pluck="name",
 			limit=1,
