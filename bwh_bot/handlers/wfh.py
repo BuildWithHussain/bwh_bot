@@ -187,6 +187,7 @@ class WFHConversation(BotConversation):
 				chat_id, message_id,
 				(
 					f"<b>WFH Request Submitted</b>\n\n"
+					f"<b>Employee:</b> {doc.employee_name}\n"
 					f"<b>ID:</b> {doc.name}\n"
 					f"<b>From:</b> {data['from_date']}\n"
 					f"<b>To:</b> {data['to_date']}\n"
