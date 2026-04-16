@@ -198,4 +198,10 @@ class WFHConversation(BotConversation):
 		except Exception as e:
 			frappe.db.rollback(save_point="before_attendance_request")
 			answer_callback_query(cqid, "Failed to submit WFH request.", show_alert=True)
-			edit_message_text(chat_id, message_id, f"Failed to submit WFH request:\n<code>{e}</code>", parse_mode="HTML")
+			tb = frappe.get_traceback()
+			edit_message_text(
+				chat_id,
+				message_id,
+				f"Failed to submit WFH request: {e}\n<pre>{tb}</pre>",
+				parse_mode="HTML",
+			)

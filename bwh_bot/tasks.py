@@ -75,4 +75,3 @@ def create_monthly_petty_cash_journal_entry():
 		"accounts": accounts,
 	})
 	jv.insert()
-	frappe.db.commit()
