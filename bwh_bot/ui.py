@@ -4,7 +4,7 @@ import frappe
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 
-def from_date_buttons(prefix, include_today=False):
+def from_date_buttons(prefix, include_today=False, include_next_monday=True):
 	today = frappe.utils.today()
 	tomorrow = frappe.utils.add_days(today, 1)
 	day_after = frappe.utils.add_days(today, 2)
@@ -21,18 +21,24 @@ def from_date_buttons(prefix, include_today=False):
 			InlineKeyboardButton(f"Today ({today})", callback_data=f"{prefix}:from:{today}"),
 			InlineKeyboardButton(f"Tomorrow ({tomorrow})", callback_data=f"{prefix}:from:{tomorrow}"),
 		])
-		buttons.append([
-			InlineKeyboardButton(f"Day After ({day_after})", callback_data=f"{prefix}:from:{day_after}"),
-			InlineKeyboardButton(f"Next Monday ({next_monday})", callback_data=f"{prefix}:from:{next_monday}"),
-		])
+		if include_next_monday:
+			buttons.append([
+				InlineKeyboardButton(f"Day After ({day_after})", callback_data=f"{prefix}:from:{day_after}"),
+				InlineKeyboardButton(f"Next Monday ({next_monday})", callback_data=f"{prefix}:from:{next_monday}"),
+			])
+		else:
+			buttons.append([
+				InlineKeyboardButton(f"Day After ({day_after})", callback_data=f"{prefix}:from:{day_after}"),
+			])
 	else:
 		buttons.append([
 			InlineKeyboardButton(f"Tomorrow ({tomorrow})", callback_data=f"{prefix}:from:{tomorrow}"),
 			InlineKeyboardButton(f"Day After ({day_after})", callback_data=f"{prefix}:from:{day_after}"),
 		])
-		buttons.append([
-			InlineKeyboardButton(f"Next Monday ({next_monday})", callback_data=f"{prefix}:from:{next_monday}"),
-		])
+		if include_next_monday:
+			buttons.append([
+				InlineKeyboardButton(f"Next Monday ({next_monday})", callback_data=f"{prefix}:from:{next_monday}"),
+			])
 
 	buttons.append([InlineKeyboardButton("Custom date...", callback_data=f"{prefix}:custom_from")])
 	return buttons

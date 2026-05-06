@@ -8,7 +8,7 @@ from bwh_bot.telegram_utils import (
 	get_leave_types_for_employee,
 	send_message,
 )
-from bwh_bot.ui import confirm_buttons, from_date_buttons, make_keyboard, nav_buttons, to_date_buttons
+from bwh_bot.ui import from_date_buttons, make_keyboard, nav_buttons, to_date_buttons
 
 
 class LeaveConversation(BotConversation):
@@ -51,7 +51,10 @@ class LeaveConversation(BotConversation):
 				chat_id, message_id,
 				f"<b>Leave Type:</b> {value}\n\nSelect <b>from date</b>:",
 				parse_mode="HTML",
-				reply_markup=make_keyboard(from_date_buttons(self.callback_prefix), nav_buttons(self.callback_prefix)),
+				reply_markup=make_keyboard(
+					from_date_buttons(self.callback_prefix, include_today=True, include_next_monday=False),
+					nav_buttons(self.callback_prefix),
+				),
 			)
 
 		elif action == "from":
@@ -66,7 +69,12 @@ class LeaveConversation(BotConversation):
 			)
 
 		elif action == "to":
-			self.update_state(state, "confirm", {"to_date": value})
+			self.update_state(state, "confirm", {"to_date": value, "half_day": False})
+			answer_callback_query(cqid)
+			self._show_summary(state, chat_id, message_id)
+
+		elif action == "half_day":
+			self.update_state(state, "confirm", {"half_day": value == "1"})
 			answer_callback_query(cqid)
 			self._show_summary(state, chat_id, message_id)
 
@@ -99,11 +107,14 @@ class LeaveConversation(BotConversation):
 				chat_id, message_id,
 				f"<b>Leave Type:</b> {data['leave_type']}\n\nSelect <b>from date</b>:",
 				parse_mode="HTML",
-				reply_markup=make_keyboard(from_date_buttons(self.callback_prefix), nav_buttons(self.callback_prefix)),
+				reply_markup=make_keyboard(
+					from_date_buttons(self.callback_prefix, include_today=True, include_next_monday=False),
+					nav_buttons(self.callback_prefix),
+				),
 			)
 
 		elif step == "confirm":
-			self.update_state(state, "select_to_date")
+			self.update_state(state, "select_to_date", {"half_day": False})
 			edit_message_text(
 				chat_id, message_id,
 				f"<b>Leave Type:</b> {data['leave_type']}\n<b>From:</b> {data['from_date']}\n\nSelect <b>to date</b>:",
@@ -127,21 +138,13 @@ class LeaveConversation(BotConversation):
 			)
 
 		elif state.step == "awaiting_to_date":
-			self.update_state(state, "confirm", {"to_date": date_str})
+			self.update_state(state, "confirm", {"to_date": date_str, "half_day": False})
 			data = self.get_data(state)
-			days = frappe.utils.date_diff(date_str, data["from_date"]) + 1
 			send_message(
 				chat_id,
-				(
-					f"<b>Leave Application Summary</b>\n\n"
-					f"<b>Type:</b> {data['leave_type']}\n"
-					f"<b>From:</b> {data['from_date']}\n"
-					f"<b>To:</b> {date_str}\n"
-					f"<b>Days:</b> {days}\n\n"
-					f"Confirm?"
-				),
+				self._summary_text(data),
 				parse_mode="HTML",
-				reply_markup=make_keyboard(confirm_buttons(self.callback_prefix)),
+				reply_markup=make_keyboard(self._summary_buttons(data)),
 				message_thread_id=message_thread_id,
 			)
 
@@ -161,21 +164,40 @@ class LeaveConversation(BotConversation):
 			buttons.append([InlineKeyboardButton(label, callback_data=f"{self.callback_prefix}:type:{lt['leave_type']}")])
 		return buttons
 
+	def _summary_text(self, data):
+		days = frappe.utils.date_diff(data["to_date"], data["from_date"]) + 1
+		half_day = data.get("half_day", False)
+		if half_day:
+			days = days - 0.5
+		days_str = f"{days:g}"
+
+		return (
+			f"<b>Leave Application Summary</b>\n\n"
+			f"<b>Type:</b> {data['leave_type']}\n"
+			f"<b>From:</b> {data['from_date']}\n"
+			f"<b>To:</b> {data['to_date']}\n"
+			f"<b>Days:</b> {days_str}{' (half day)' if half_day else ''}\n\n"
+			f"Confirm?"
+		)
+
+	def _summary_buttons(self, data):
+		half_day = data.get("half_day", False)
+		p = self.callback_prefix
+		return [
+			[
+				InlineKeyboardButton(f"{'✅ Half Day' if half_day else 'Half Day'}", callback_data=f"{p}:half_day:1"),
+				InlineKeyboardButton(f"{'Full Day' if half_day else '✅ Full Day'}", callback_data=f"{p}:half_day:0"),
+			],
+			[InlineKeyboardButton("Confirm & Submit", callback_data=f"{p}:confirm")],
+		] + nav_buttons(p)
+
 	def _show_summary(self, state, chat_id, message_id):
 		data = self.get_data(state)
-		days = frappe.utils.date_diff(data["to_date"], data["from_date"]) + 1
 		edit_message_text(
 			chat_id, message_id,
-			(
-				f"<b>Leave Application Summary</b>\n\n"
-				f"<b>Type:</b> {data['leave_type']}\n"
-				f"<b>From:</b> {data['from_date']}\n"
-				f"<b>To:</b> {data['to_date']}\n"
-				f"<b>Days:</b> {days}\n\n"
-				f"Confirm?"
-			),
+			self._summary_text(data),
 			parse_mode="HTML",
-			reply_markup=make_keyboard(confirm_buttons(self.callback_prefix)),
+			reply_markup=make_keyboard(self._summary_buttons(data)),
 		)
 
 	def _handle_confirm(self, state, ctx):
@@ -194,6 +216,9 @@ class LeaveConversation(BotConversation):
 				"status": "Open",
 				"follow_via_email": 0,
 			})
+			if data.get("half_day"):
+				leave_app.half_day = 1
+				leave_app.half_day_date = data["from_date"]
 			leave_app.insert()
 			frappe.db.commit()
 
@@ -206,6 +231,7 @@ class LeaveConversation(BotConversation):
 					f"<b>Type:</b> {data['leave_type']}\n"
 					f"<b>From:</b> {data['from_date']}\n"
 					f"<b>To:</b> {data['to_date']}\n"
+					f"<b>Half Day:</b> {'Yes' if data.get('half_day') else 'No'}\n"
 					f"<b>Status:</b> Pending Approval\n"
 				),
 				parse_mode="HTML",
