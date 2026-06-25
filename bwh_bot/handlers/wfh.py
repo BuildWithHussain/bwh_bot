@@ -136,14 +136,16 @@ class WFHConversation(BotConversation):
 			[InlineKeyboardButton("Confirm & Submit", callback_data=f"{p}:confirm")],
 		] + nav_buttons(p)
 
+	def _total_wfh_days(self, data):
+		days = frappe.utils.date_diff(data["to_date"], data["from_date"]) + 1
+		if data.get("half_day"):
+			days -= 0.5
+		return days
+
 	def _show_summary(self, state, chat_id, message_id):
 		data = self.get_data(state)
-		days = frappe.utils.date_diff(data["to_date"], data["from_date"]) + 1
 		half_day = data.get("half_day", False)
-
-		half_day_text = ""
-		if half_day:
-			half_day_text = f"\n<b>Half Day:</b> Yes ({data['from_date']})"
+		total_wfh_days = self._total_wfh_days(data)
 
 		edit_message_text(
 			chat_id, message_id,
@@ -151,8 +153,8 @@ class WFHConversation(BotConversation):
 				f"<b>Work From Home Summary</b>\n\n"
 				f"<b>From:</b> {data['from_date']}\n"
 				f"<b>To:</b> {data['to_date']}\n"
-				f"<b>Days:</b> {days}"
-				f"{half_day_text}\n\n"
+				f"<b>Type:</b> {'Half Day' if half_day else 'Full Day'}\n"
+				f"<b>Total WFH Days:</b> {total_wfh_days:g}\n\n"
 				f"Confirm and submit?"
 			),
 			parse_mode="HTML",
@@ -165,16 +167,19 @@ class WFHConversation(BotConversation):
 		chat_id, message_id, cqid = ctx["chat_id"], ctx["message_id"], ctx["callback_query_id"]
 
 		try:
+			total_wfh_days = self._total_wfh_days(data)
+
+			# Capture the WFH days in the custom field instead of ticking the
+			# Half Day checkbox — that checkbox would split the day into half
+			# present / half absent in attendance, which we don't want for WFH.
 			doc_data = {
 				"doctype": "Attendance Request",
 				"employee": data["employee"],
 				"from_date": data["from_date"],
 				"to_date": data["to_date"],
 				"reason": "Work From Home",
+				"custom_total_wfh_days": total_wfh_days,
 			}
-			if data.get("half_day"):
-				doc_data["half_day"] = 1
-				doc_data["half_day_date"] = data["from_date"]
 
 			frappe.db.savepoint("before_attendance_request")
 			doc = frappe.get_doc(doc_data)
@@ -191,6 +196,7 @@ class WFHConversation(BotConversation):
 					f"<b>ID:</b> {doc.name}\n"
 					f"<b>From:</b> {data['from_date']}\n"
 					f"<b>To:</b> {data['to_date']}\n"
+					f"<b>Total WFH Days:</b> {total_wfh_days:g}\n"
 					f"<b>Status:</b> Submitted\n"
 				),
 				parse_mode="HTML",

@@ -86,7 +86,11 @@ app_license = "mit"
 # ------------
 
 # before_install = "bwh_bot.install.before_install"
-# after_install = "bwh_bot.install.after_install"
+after_install = "bwh_bot.install.after_install"
+
+# Migration
+# ---------
+after_migrate = "bwh_bot.install.after_migrate"
 
 # Uninstallation
 # ------------
@@ -141,7 +145,19 @@ doc_events = {
 # Scheduled Tasks
 # ---------------
 
+# Cron times are evaluated in the server's timezone.
 scheduler_events = {
+	"cron": {
+		# 10:30 AM — who is on leave and who is working from home today
+		"30 10 * * *": [
+			"bwh_bot.tasks.send_daily_leave_notification",
+			"bwh_bot.tasks.send_daily_wfh_notification",
+		],
+		# 3:00 PM — second WFH reminder for the day
+		"0 15 * * *": [
+			"bwh_bot.tasks.send_daily_wfh_notification",
+		],
+	},
 	"monthly": [
 		"bwh_bot.tasks.create_monthly_petty_cash_journal_entry"
 	],
