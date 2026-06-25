@@ -60,6 +60,16 @@ def set_message_reaction(chat_id, message_id, emoji="👍"):
 	)
 
 
+def broadcast_to_whitelisted_chats(text, parse_mode="HTML"):
+	"""Send a message to every whitelisted chat, logging (not raising) on failure."""
+	settings = frappe.get_single("BWH Bot Settings")
+	for chat in settings.whitelisted_chats:
+		try:
+			send_message(chat.chat_id, text, parse_mode=parse_mode)
+		except Exception:
+			frappe.log_error(f"Failed to send Telegram notification to chat {chat.chat_id}")
+
+
 def is_whitelisted(chat_id):
 	settings = frappe.get_single("BWH Bot Settings")
 	chat_id = str(chat_id)
