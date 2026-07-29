@@ -263,6 +263,60 @@ class TestHiveConversation(HiveConversationTestCase):
 		self.assertIn("assigning failed", self.last)
 
 
+class TestHiveCustomDates(HiveConversationTestCase):
+	"""The "Custom date..." buttons route through the base class, which parses the
+	reply and hands a date string to on_text_input rather than on_action."""
+
+	def _to_custom_start(self):
+		state = self._start()
+		self.handler.handle_text_input(state, CHAT_ID, "Custom date test")
+		self.handler.on_action("skip_desc", None, state, self.ctx)
+		self.handler.update_state(state, "awaiting_from_date")
+		return state
+
+	def test_custom_start_date_advances_to_end_date(self):
+		state = self._to_custom_start()
+
+		self.handler.handle_text_input(state, CHAT_ID, "3 Aug 2026")
+
+		self.assertEqual(state.step, "select_end_date")
+		self.assertEqual(self.handler.get_data(state)["start_date"], "2026-08-03")
+		self.assertIn("end date", self.last)
+
+	def test_custom_end_date_advances_to_project(self):
+		state = self._to_custom_start()
+		self.handler.handle_text_input(state, CHAT_ID, "3 Aug 2026")
+		self.handler.update_state(state, "awaiting_to_date")
+
+		self.handler.handle_text_input(state, CHAT_ID, "7 Aug 2026")
+
+		self.assertEqual(state.step, "select_project")
+		self.assertEqual(self.handler.get_data(state)["due_date"], "2026-08-07")
+
+	def test_custom_end_date_before_start_is_rejected(self):
+		state = self._to_custom_start()
+		self.handler.handle_text_input(state, CHAT_ID, "10 Aug 2026")
+		self.handler.update_state(state, "awaiting_to_date")
+
+		self.handler.handle_text_input(state, CHAT_ID, "1 Aug 2026")
+
+		self.assertIn("can't be before the start date", self.last)
+		self.assertEqual(state.step, "awaiting_to_date")
+
+	def test_unparseable_date_is_reported(self):
+		state = self._to_custom_start()
+
+		self.handler.handle_text_input(state, CHAT_ID, "not a date")
+
+		self.assertIn("Could not parse", self.last)
+		self.assertEqual(state.step, "awaiting_from_date")
+
+	def test_unknown_action_is_reported(self):
+		state = self._start()
+		self.handler.on_action("no_such_action", None, state, self.ctx)
+		self.assertEqual(self.last, "Unknown action.")
+
+
 class TestHiveSiteSelection(HiveConversationTestCase):
 	def test_single_site_skips_the_picker(self):
 		state = self._start()
@@ -425,6 +479,57 @@ class TestHiveClient(IntegrationTestCase):
 		self.assertIn("Open", captured["params"]["filters"])
 		self.assertEqual(captured["params"]["limit_page_length"], hive_client.MAX_PROJECTS)
 
+	def test_list_members_filters_to_active_team_members(self):
+		site = FakeSite()
+		captured = {}
+
+		def fake_request(site, method, path, **kwargs):
+			captured.update(path=path, params=kwargs.get("params"))
+			return {"data": MEMBERS}
+
+		with patch.object(hive_client, "_request", fake_request):
+			result = hive_client.list_members(site)
+
+		self.assertEqual(result, MEMBERS)
+		self.assertEqual(captured["path"], "/api/resource/Hive Member")
+		self.assertIn("is_active", captured["params"]["filters"])
+		self.assertIn("Team", captured["params"]["filters"])
+		self.assertEqual(captured["params"]["limit_page_length"], hive_client.MAX_MEMBERS)
+
+	def test_active_sites_skips_disabled_rows(self):
+		settings = type("S", (), {"hive_sites": [FakeSite("a"), FakeSite("b", is_active=0)]})()
+		with patch("bwh_bot.hive_client.frappe.get_single", return_value=settings):
+			self.assertEqual([s.name for s in hive_client.active_sites()], ["a"])
+
+	def test_non_json_response_is_reported(self):
+		site = FakeSite()
+
+		class Response:
+			status_code = 200
+			text = "<html>nope</html>"
+
+			def json(self):
+				raise ValueError("not json")
+
+		with patch("bwh_bot.hive_client.get_decrypted_password", return_value="s"):
+			with patch("bwh_bot.hive_client.requests.request", return_value=Response()):
+				with self.assertRaises(HiveSiteError) as cm:
+					hive_client._request(site, "GET", "/api/resource/Hive Project")
+
+		self.assertIn("non-JSON", str(cm.exception))
+
+	def test_error_text_falls_back_to_exc_type(self):
+		class Response:
+			status_code = 500
+			text = ""
+
+			def json(self):
+				return {"exc_type": "ValidationError", "exc": "long traceback here"}
+
+		message = hive_client._error_text(Response())
+		self.assertEqual(message, "ValidationError")
+		self.assertNotIn("traceback", message)
+
 	def test_assign_uses_the_standard_assignment_endpoint(self):
 		site = FakeSite()
 		captured = {}
@@ -439,3 +544,35 @@ class TestHiveClient(IntegrationTestCase):
 		self.assertEqual(captured["path"], "/api/method/frappe.desk.form.assign_to.add")
 		self.assertEqual(captured["json"]["doctype"], "Hive Task")
 		self.assertEqual(captured["json"]["assign_to"], ["ada@example.com"])
+
+
+class TestInstallCustomFields(IntegrationTestCase):
+	"""The custom fields target Frappe HR doctypes, which are optional. Without
+	this guard `install-app` fails outright on a site (and in CI) without HR."""
+
+	def test_absent_doctypes_are_skipped(self):
+		from bwh_bot import install
+
+		with patch("bwh_bot.install.frappe.db.exists", return_value=None):
+			with patch("bwh_bot.install.create_custom_fields") as create:
+				install._make_custom_fields()
+
+		create.assert_not_called()
+
+	def test_present_doctypes_are_created(self):
+		from bwh_bot import install
+
+		with patch("bwh_bot.install.frappe.db.exists", return_value="Attendance Request"):
+			with patch("bwh_bot.install.create_custom_fields") as create:
+				install._make_custom_fields()
+
+		create.assert_called_once()
+		fields = create.call_args[0][0]
+		self.assertIn("Attendance Request", fields)
+
+	def test_after_install_does_not_raise_without_hr(self):
+		from bwh_bot import install
+
+		with patch("bwh_bot.install.frappe.db.exists", return_value=None):
+			install.after_install()
+			install.after_migrate()
