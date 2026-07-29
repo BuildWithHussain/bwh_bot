@@ -263,6 +263,134 @@ class TestHiveConversation(HiveConversationTestCase):
 		self.assertIn("assigning failed", self.last)
 
 
+class TestHiveEmptyAndFailingRemote(HiveConversationTestCase):
+	"""What the user sees when the remote site answers but has nothing usable,
+	or stops answering part way through the conversation."""
+
+	def _to_project_step(self):
+		state = self._start()
+		self.handler.handle_text_input(state, CHAT_ID, "Remote edge cases")
+		self.handler.on_action("skip_desc", None, state, self.ctx)
+		self.handler.on_action("from", "2026-08-03", state, self.ctx)
+		return state
+
+	def test_no_projects_on_remote_aborts_with_an_explanation(self):
+		state = self._to_project_step()
+		with patch.object(hive_client, "list_projects", lambda site: []):
+			self.handler.on_action("to", "2026-08-07", state, self.ctx)
+
+		self.assertIn("No open projects", self.last)
+		self.assertEqual(state.is_active, 0)
+
+	def test_no_members_on_remote_aborts_with_an_explanation(self):
+		state = self._to_project_step()
+		self.handler.on_action("to", "2026-08-07", state, self.ctx)
+		with patch.object(hive_client, "list_members", lambda site: []):
+			self.handler.on_action("project", "PROJ-00001", state, self.ctx)
+
+		self.assertIn("No active Hive members", self.last)
+		self.assertEqual(state.is_active, 0)
+
+	def test_unreachable_remote_while_listing_projects_aborts(self):
+		state = self._to_project_step()
+
+		def boom(site):
+			raise HiveSiteError("Could not reach Hive: timed out")
+
+		with patch.object(hive_client, "list_projects", boom):
+			self.handler.on_action("to", "2026-08-07", state, self.ctx)
+
+		self.assertIn("Could not reach", self.last)
+		self.assertEqual(state.is_active, 0)
+
+	def test_unreachable_remote_while_listing_members_aborts(self):
+		state = self._to_project_step()
+		self.handler.on_action("to", "2026-08-07", state, self.ctx)
+
+		def boom(site):
+			raise HiveSiteError("Could not reach Hive: timed out")
+
+		with patch.object(hive_client, "list_members", boom):
+			self.handler.on_action("project", "PROJ-00001", state, self.ctx)
+
+		self.assertIn("Could not reach", self.last)
+		self.assertEqual(state.is_active, 0)
+
+
+class TestHiveBackNavigation(HiveConversationTestCase):
+	"""Every step reachable by Go Back, walked in reverse."""
+
+	def test_back_walks_from_review_to_description(self):
+		state = self._run_to_review()
+		self.assertEqual(state.step, "confirm")
+
+		self.handler.on_back(state, self.ctx)
+		self.assertEqual(state.step, "select_assignees")
+
+		self.handler.on_back(state, self.ctx)
+		self.assertEqual(state.step, "select_project")
+
+		self.handler.on_back(state, self.ctx)
+		self.assertEqual(state.step, "select_end_date")
+
+		self.handler.on_back(state, self.ctx)
+		self.assertEqual(state.step, "select_start_date")
+
+		self.handler.on_back(state, self.ctx)
+		self.assertEqual(state.step, "awaiting_description")
+		self.assertIn("description", self.last)
+
+	def test_going_back_and_forward_keeps_the_earlier_answers(self):
+		state = self._run_to_review()
+		self.handler.on_back(state, self.ctx)
+		self.handler.on_back(state, self.ctx)
+
+		# Re-pick the project and finish again; the title must survive.
+		self.handler.on_action("project", "PROJ-00002", state, self.ctx)
+		self.handler.on_action("assignees_done", None, state, self.ctx)
+		self.handler.on_action("confirm", None, state, self.ctx)
+
+		_, payload = self.created[0]
+		self.assertEqual(payload["title"], "Ship the thing")
+		self.assertEqual(payload["project"], "PROJ-00002")
+
+
+class TestHiveCancel(HiveConversationTestCase):
+	def test_cancel_clears_the_session(self):
+		state = self._start()
+
+		log = type(
+			"Log",
+			(),
+			{
+				"chat_id": CHAT_ID,
+				"telegram_user_id": TG_USER_ID,
+				"callback_query_id": "cq1",
+				"callback_data": "hive:cancel",
+			},
+		)()
+		self.handler.handle_callback({"message": {"message_id": 1}}, log)
+
+		state.reload()
+		self.assertEqual(state.is_active, 0)
+		self.assertIn("cancelled", self.sent[-2].lower())
+
+	def test_button_press_without_a_session_is_reported(self):
+		log = type(
+			"Log",
+			(),
+			{
+				"chat_id": CHAT_ID,
+				"telegram_user_id": TG_USER_ID,
+				"callback_query_id": "cq1",
+				"callback_data": "hive:confirm",
+			},
+		)()
+		self.handler.handle_callback({"message": {"message_id": 1}}, log)
+
+		self.assertIn("No active session", self.last)
+
+
 class TestHiveCustomDates(HiveConversationTestCase):
 	"""The "Custom date..." buttons route through the base class, which parses the
 	reply and hands a date string to on_text_input rather than on_action."""

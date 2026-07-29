@@ -42,7 +42,11 @@ for _handler in CONVERSATION_HANDLERS.values():
 		register_callback(_handler.callback_prefix)(_handler.handle_callback)
 
 
-@frappe.whitelist(allow_guest=True)
+# Telegram calls this webhook unauthenticated by design, so it cannot require a
+# session. The shared secret checked below (X-Telegram-Bot-Api-Secret-Token) is
+# what authenticates the request, and each update is gated again by the chat
+# whitelist before any handler runs.
+@frappe.whitelist(allow_guest=True)  # nosemgrep
 def hook(**kwargs):
 	try:
 		settings = frappe.get_single("BWH Bot Settings")
