@@ -41,16 +41,18 @@ class BotConversation:
 		if existing:
 			return frappe.get_doc("Telegram Conversation State", existing)
 
-		state = frappe.get_doc({
-			"doctype": "Telegram Conversation State",
-			"chat_id": str(chat_id),
-			"telegram_user_id": str(telegram_user_id),
-			"handler": self.handler_name,
-			"step": initial_step,
-			"is_active": 1,
-			"data": json.dumps({}),
-			"expires_at": frappe.utils.add_to_date(None, hours=1),
-		})
+		state = frappe.get_doc(
+			{
+				"doctype": "Telegram Conversation State",
+				"chat_id": str(chat_id),
+				"telegram_user_id": str(telegram_user_id),
+				"handler": self.handler_name,
+				"step": initial_step,
+				"is_active": 1,
+				"data": json.dumps({}),
+				"expires_at": frappe.utils.add_to_date(None, hours=1),
+			}
+		)
 		state.insert(ignore_permissions=True)
 		return state
 
@@ -101,7 +103,12 @@ class BotConversation:
 
 		employee = get_employee_from_user(frappe.session.user)
 		if not employee:
-			send_message(chat_id, "You are not linked to any active employee record.", reply_to_message_id=message_id, message_thread_id=message_thread_id)
+			send_message(
+				chat_id,
+				"You are not linked to any active employee record.",
+				reply_to_message_id=message_id,
+				message_thread_id=message_thread_id,
+			)
 			return
 
 		state = self.get_or_create_state(chat_id, message["from"]["id"])
@@ -153,7 +160,8 @@ class BotConversation:
 			data = self.get_data(state)
 			header = self._build_header(data)
 			edit_message_text(
-				chat_id, message_id,
+				chat_id,
+				message_id,
 				f"{header}\n\nReply to this message with the <b>from date</b> (e.g. 25 Mar 2026):",
 				parse_mode="HTML",
 			)
@@ -165,7 +173,8 @@ class BotConversation:
 			data = self.get_data(state)
 			header = self._build_header(data)
 			edit_message_text(
-				chat_id, message_id,
+				chat_id,
+				message_id,
 				f"{header}\n\nReply to this message with the <b>to date</b> (e.g. 28 Mar 2026):",
 				parse_mode="HTML",
 			)

@@ -158,9 +158,7 @@ scheduler_events = {
 			"bwh_bot.tasks.send_daily_wfh_notification",
 		],
 	},
-	"monthly": [
-		"bwh_bot.tasks.create_monthly_petty_cash_journal_entry"
-	],
+	"monthly": ["bwh_bot.tasks.create_monthly_petty_cash_journal_entry"],
 }
 
 fixtures = [
@@ -261,4 +259,3 @@ require_type_annotated_api_methods = True
 # ------------
 # List of apps whose translatable strings should be excluded from this app's translations.
 # ignore_translatable_strings_from = []
-

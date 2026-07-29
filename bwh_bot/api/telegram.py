@@ -28,15 +28,12 @@ def register_callback(prefix):
 	return decorator
 
 
-# import handlers to register them
-from bwh_bot.handlers import ping  # noqa: F401, E402
-
-# import conversation handlers — auto-registers via __init_subclass__
-from bwh_bot.handlers import leave, petty_cash, wfh  # noqa: F401, E402
-
-# register conversation handlers into COMMAND_HANDLERS and CALLBACK_HANDLERS
+# Importing the handler modules is what registers them: ping registers a plain
+# command, and the conversation subclasses self-register via __init_subclass__.
 from bwh_bot.conversation import CONVERSATION_HANDLERS
+from bwh_bot.handlers import leave, petty_cash, ping, wfh
 
+# Register conversation handlers into COMMAND_HANDLERS and CALLBACK_HANDLERS.
 for _handler in CONVERSATION_HANDLERS.values():
 	if _handler.command:
 		register_command(_handler.command, _handler.command_description)(_handler.handle_command)
@@ -80,21 +77,25 @@ def hook(**kwargs):
 		if message.get("date"):
 			message_date = datetime.fromtimestamp(message["date"])
 
-		doc = frappe.get_doc({
-			"doctype": "Telegram Webhook Log",
-			"update_type": update_type,
-			"chat_id": str(chat.get("id", "")),
-			"chat_title": chat.get("title", ""),
-			"telegram_user_id": str(telegram_user.get("id", "")),
-			"telegram_username": telegram_user.get("username", ""),
-			"telegram_user_name": f"{telegram_user.get('first_name', '')} {telegram_user.get('last_name', '')}".strip(),
-			"command": command,
-			"message_text": text,
-			"message_id": str(message.get("message_id", "")),
-			"message_thread_id": str(message["message_thread_id"]) if message.get("message_thread_id") else None,
-			"message_date": message_date,
-			"payload": json.dumps(data, indent=2),
-		})
+		doc = frappe.get_doc(
+			{
+				"doctype": "Telegram Webhook Log",
+				"update_type": update_type,
+				"chat_id": str(chat.get("id", "")),
+				"chat_title": chat.get("title", ""),
+				"telegram_user_id": str(telegram_user.get("id", "")),
+				"telegram_username": telegram_user.get("username", ""),
+				"telegram_user_name": f"{telegram_user.get('first_name', '')} {telegram_user.get('last_name', '')}".strip(),
+				"command": command,
+				"message_text": text,
+				"message_id": str(message.get("message_id", "")),
+				"message_thread_id": str(message["message_thread_id"])
+				if message.get("message_thread_id")
+				else None,
+				"message_date": message_date,
+				"payload": json.dumps(data, indent=2),
+			}
+		)
 		doc.insert(ignore_permissions=True)
 		frappe.db.commit()
 	except Exception:
@@ -112,20 +113,24 @@ def _handle_callback_query(data, callback_query):
 	if message.get("date"):
 		message_date = datetime.fromtimestamp(message["date"])
 
-	doc = frappe.get_doc({
-		"doctype": "Telegram Webhook Log",
-		"update_type": "callback_query",
-		"chat_id": str(chat.get("id", "")),
-		"chat_title": chat.get("title", ""),
-		"telegram_user_id": str(telegram_user.get("id", "")),
-		"telegram_username": telegram_user.get("username", ""),
-		"telegram_user_name": f"{telegram_user.get('first_name', '')} {telegram_user.get('last_name', '')}".strip(),
-		"callback_query_id": callback_query.get("id", ""),
-		"callback_data": callback_query.get("data", ""),
-		"message_id": str(message.get("message_id", "")),
-		"message_thread_id": str(message["message_thread_id"]) if message.get("message_thread_id") else None,
-		"message_date": message_date,
-		"payload": json.dumps(data, indent=2),
-	})
+	doc = frappe.get_doc(
+		{
+			"doctype": "Telegram Webhook Log",
+			"update_type": "callback_query",
+			"chat_id": str(chat.get("id", "")),
+			"chat_title": chat.get("title", ""),
+			"telegram_user_id": str(telegram_user.get("id", "")),
+			"telegram_username": telegram_user.get("username", ""),
+			"telegram_user_name": f"{telegram_user.get('first_name', '')} {telegram_user.get('last_name', '')}".strip(),
+			"callback_query_id": callback_query.get("id", ""),
+			"callback_data": callback_query.get("data", ""),
+			"message_id": str(message.get("message_id", "")),
+			"message_thread_id": str(message["message_thread_id"])
+			if message.get("message_thread_id")
+			else None,
+			"message_date": message_date,
+			"payload": json.dumps(data, indent=2),
+		}
+	)
 	doc.insert(ignore_permissions=True)
 	frappe.db.commit()

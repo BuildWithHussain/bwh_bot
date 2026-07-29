@@ -17,28 +17,46 @@ def from_date_buttons(prefix, include_today=False, include_next_monday=True):
 
 	buttons = []
 	if include_today:
-		buttons.append([
-			InlineKeyboardButton(f"Today ({today})", callback_data=f"{prefix}:from:{today}"),
-			InlineKeyboardButton(f"Tomorrow ({tomorrow})", callback_data=f"{prefix}:from:{tomorrow}"),
-		])
+		buttons.append(
+			[
+				InlineKeyboardButton(f"Today ({today})", callback_data=f"{prefix}:from:{today}"),
+				InlineKeyboardButton(f"Tomorrow ({tomorrow})", callback_data=f"{prefix}:from:{tomorrow}"),
+			]
+		)
 		if include_next_monday:
-			buttons.append([
-				InlineKeyboardButton(f"Day After ({day_after})", callback_data=f"{prefix}:from:{day_after}"),
-				InlineKeyboardButton(f"Next Monday ({next_monday})", callback_data=f"{prefix}:from:{next_monday}"),
-			])
+			buttons.append(
+				[
+					InlineKeyboardButton(
+						f"Day After ({day_after})", callback_data=f"{prefix}:from:{day_after}"
+					),
+					InlineKeyboardButton(
+						f"Next Monday ({next_monday})", callback_data=f"{prefix}:from:{next_monday}"
+					),
+				]
+			)
 		else:
-			buttons.append([
-				InlineKeyboardButton(f"Day After ({day_after})", callback_data=f"{prefix}:from:{day_after}"),
-			])
+			buttons.append(
+				[
+					InlineKeyboardButton(
+						f"Day After ({day_after})", callback_data=f"{prefix}:from:{day_after}"
+					),
+				]
+			)
 	else:
-		buttons.append([
-			InlineKeyboardButton(f"Tomorrow ({tomorrow})", callback_data=f"{prefix}:from:{tomorrow}"),
-			InlineKeyboardButton(f"Day After ({day_after})", callback_data=f"{prefix}:from:{day_after}"),
-		])
+		buttons.append(
+			[
+				InlineKeyboardButton(f"Tomorrow ({tomorrow})", callback_data=f"{prefix}:from:{tomorrow}"),
+				InlineKeyboardButton(f"Day After ({day_after})", callback_data=f"{prefix}:from:{day_after}"),
+			]
+		)
 		if include_next_monday:
-			buttons.append([
-				InlineKeyboardButton(f"Next Monday ({next_monday})", callback_data=f"{prefix}:from:{next_monday}"),
-			])
+			buttons.append(
+				[
+					InlineKeyboardButton(
+						f"Next Monday ({next_monday})", callback_data=f"{prefix}:from:{next_monday}"
+					),
+				]
+			)
 
 	buttons.append([InlineKeyboardButton("Custom date...", callback_data=f"{prefix}:custom_from")])
 	return buttons
@@ -94,7 +112,8 @@ def nav_buttons(prefix, show_back=True):
 def confirm_buttons(prefix, label="Confirm"):
 	return [
 		[InlineKeyboardButton(label, callback_data=f"{prefix}:confirm")],
-	] + nav_buttons(prefix)
+		*nav_buttons(prefix),
+	]
 
 
 def make_keyboard(*button_rows):

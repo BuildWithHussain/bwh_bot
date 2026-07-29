@@ -38,10 +38,13 @@ class WFHConversation(BotConversation):
 			self.update_state(state, "select_to_date", {"from_date": value})
 			answer_callback_query(cqid)
 			edit_message_text(
-				chat_id, message_id,
+				chat_id,
+				message_id,
 				f"<b>{self.title}</b>\n<b>From:</b> {value}\n\nSelect <b>to date</b>:",
 				parse_mode="HTML",
-				reply_markup=make_keyboard(to_date_buttons(self.callback_prefix, value), nav_buttons(self.callback_prefix)),
+				reply_markup=make_keyboard(
+					to_date_buttons(self.callback_prefix, value), nav_buttons(self.callback_prefix)
+				),
 			)
 
 		elif action == "to":
@@ -69,7 +72,8 @@ class WFHConversation(BotConversation):
 		if step == "select_to_date":
 			self.update_state(state, "select_from_date")
 			edit_message_text(
-				chat_id, message_id,
+				chat_id,
+				message_id,
 				f"<b>{self.title}</b>\n\nSelect <b>from date</b>:",
 				parse_mode="HTML",
 				reply_markup=make_keyboard(
@@ -81,10 +85,14 @@ class WFHConversation(BotConversation):
 		elif step == "confirm":
 			self.update_state(state, "select_to_date")
 			edit_message_text(
-				chat_id, message_id,
+				chat_id,
+				message_id,
 				f"<b>{self.title}</b>\n<b>From:</b> {data['from_date']}\n\nSelect <b>to date</b>:",
 				parse_mode="HTML",
-				reply_markup=make_keyboard(to_date_buttons(self.callback_prefix, data["from_date"]), nav_buttons(self.callback_prefix)),
+				reply_markup=make_keyboard(
+					to_date_buttons(self.callback_prefix, data["from_date"]),
+					nav_buttons(self.callback_prefix),
+				),
 			)
 
 	def on_text_input(self, state, chat_id, date_str):
@@ -97,7 +105,9 @@ class WFHConversation(BotConversation):
 				chat_id,
 				f"<b>{self.title}</b>\n<b>From:</b> {date_str}\n\nSelect <b>to date</b>:",
 				parse_mode="HTML",
-				reply_markup=make_keyboard(to_date_buttons(self.callback_prefix, date_str), nav_buttons(self.callback_prefix)),
+				reply_markup=make_keyboard(
+					to_date_buttons(self.callback_prefix, date_str), nav_buttons(self.callback_prefix)
+				),
 				message_thread_id=message_thread_id,
 			)
 
@@ -130,11 +140,16 @@ class WFHConversation(BotConversation):
 		p = self.callback_prefix
 		return [
 			[
-				InlineKeyboardButton(f"{'Half Day' if not half_day else '✅ Half Day'}", callback_data=f"{p}:half_day:1"),
-				InlineKeyboardButton(f"{'✅ Full Day' if not half_day else 'Full Day'}", callback_data=f"{p}:half_day:0"),
+				InlineKeyboardButton(
+					f"{'Half Day' if not half_day else '✅ Half Day'}", callback_data=f"{p}:half_day:1"
+				),
+				InlineKeyboardButton(
+					f"{'✅ Full Day' if not half_day else 'Full Day'}", callback_data=f"{p}:half_day:0"
+				),
 			],
 			[InlineKeyboardButton("Confirm & Submit", callback_data=f"{p}:confirm")],
-		] + nav_buttons(p)
+			*nav_buttons(p),
+		]
 
 	def _total_wfh_days(self, data):
 		days = frappe.utils.date_diff(data["to_date"], data["from_date"]) + 1
@@ -148,7 +163,8 @@ class WFHConversation(BotConversation):
 		total_wfh_days = self._total_wfh_days(data)
 
 		edit_message_text(
-			chat_id, message_id,
+			chat_id,
+			message_id,
 			(
 				f"<b>Work From Home Summary</b>\n\n"
 				f"<b>From:</b> {data['from_date']}\n"
@@ -189,7 +205,8 @@ class WFHConversation(BotConversation):
 
 			answer_callback_query(cqid, "WFH request submitted!")
 			edit_message_text(
-				chat_id, message_id,
+				chat_id,
+				message_id,
 				(
 					f"<b>WFH Request Submitted</b>\n\n"
 					f"<b>Employee:</b> {doc.employee_name}\n"

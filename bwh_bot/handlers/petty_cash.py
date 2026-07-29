@@ -87,7 +87,8 @@ class PettyCashConversation(BotConversation):
 			answer_callback_query(cqid)
 			data = self.get_data(state)
 			edit_message_text(
-				chat_id, message_id,
+				chat_id,
+				message_id,
 				f"{self._build_header(data)}\n\nReply with a short <b>description/remarks</b>:",
 				parse_mode="HTML",
 			)
@@ -102,7 +103,8 @@ class PettyCashConversation(BotConversation):
 			answer_callback_query(cqid)
 			data = self.get_data(state)
 			edit_message_text(
-				chat_id, message_id,
+				chat_id,
+				message_id,
 				f"{self._build_header(data)}\n\nReply with the <b>expense date</b> (e.g. 25 Mar 2026):",
 				parse_mode="HTML",
 			)
@@ -137,7 +139,8 @@ class PettyCashConversation(BotConversation):
 		if step == "select_category":
 			self.update_state(state, "awaiting_amount")
 			edit_message_text(
-				chat_id, message_id,
+				chat_id,
+				message_id,
 				f"<b>{self.title}</b>\n\nReply with the <b>amount</b>:",
 				parse_mode="HTML",
 			)
@@ -146,7 +149,8 @@ class PettyCashConversation(BotConversation):
 			categories = _get_categories()
 			self.update_state(state, "select_category")
 			edit_message_text(
-				chat_id, message_id,
+				chat_id,
+				message_id,
 				f"{self._build_header(data)}\n\nSelect <b>category</b>:",
 				parse_mode="HTML",
 				reply_markup=make_keyboard(
@@ -158,7 +162,8 @@ class PettyCashConversation(BotConversation):
 		elif step == "select_date":
 			self.update_state(state, "awaiting_remarks")
 			edit_message_text(
-				chat_id, message_id,
+				chat_id,
+				message_id,
 				f"{self._build_header(data)}\n\nReply with a short <b>description/remarks</b>:",
 				parse_mode="HTML",
 			)
@@ -166,7 +171,8 @@ class PettyCashConversation(BotConversation):
 		elif step == "confirm":
 			self.update_state(state, "select_date")
 			edit_message_text(
-				chat_id, message_id,
+				chat_id,
+				message_id,
 				f"{self._build_header(data)}\n\nSelect <b>expense date</b>:",
 				parse_mode="HTML",
 				reply_markup=make_keyboard(
@@ -200,7 +206,8 @@ class PettyCashConversation(BotConversation):
 	def _show_summary(self, state, chat_id, message_id):
 		data = self.get_data(state)
 		edit_message_text(
-			chat_id, message_id,
+			chat_id,
+			message_id,
 			self._summary_text(data),
 			parse_mode="HTML",
 			reply_markup=make_keyboard(confirm_buttons(self.callback_prefix, label="Confirm & Save")),
@@ -213,20 +220,23 @@ class PettyCashConversation(BotConversation):
 
 		try:
 			frappe.db.savepoint("before_petty_cash_usage")
-			doc = frappe.get_doc({
-				"doctype": "Petty Cash Usage",
-				"employee": data["employee"],
-				"amount": data["amount"],
-				"category": data["category"],
-				"remarks": data.get("remarks"),
-				"expense_date": data["expense_date"],
-			})
+			doc = frappe.get_doc(
+				{
+					"doctype": "Petty Cash Usage",
+					"employee": data["employee"],
+					"amount": data["amount"],
+					"category": data["category"],
+					"remarks": data.get("remarks"),
+					"expense_date": data["expense_date"],
+				}
+			)
 			doc.insert()
 			frappe.db.commit()
 
 			answer_callback_query(cqid, "Petty cash entry saved!")
 			edit_message_text(
-				chat_id, message_id,
+				chat_id,
+				message_id,
 				(
 					f"<b>Petty Cash Entry Saved</b>\n\n"
 					f"<b>ID:</b> {doc.name}\n"
@@ -242,7 +252,9 @@ class PettyCashConversation(BotConversation):
 		except Exception as e:
 			frappe.db.rollback(save_point="before_petty_cash_usage")
 			answer_callback_query(cqid, "Failed to save petty cash entry.", show_alert=True)
-			edit_message_text(chat_id, message_id, f"Failed to save petty cash entry:\n<code>{e}</code>", parse_mode="HTML")
+			edit_message_text(
+				chat_id, message_id, f"Failed to save petty cash entry:\n<code>{e}</code>", parse_mode="HTML"
+			)
 
 
 def _get_categories():
@@ -250,7 +262,4 @@ def _get_categories():
 
 
 def _category_buttons(prefix, categories):
-	return [
-		[InlineKeyboardButton(cat, callback_data=f"{prefix}:cat:{cat}")]
-		for cat in categories
-	]
+	return [[InlineKeyboardButton(cat, callback_data=f"{prefix}:cat:{cat}")] for cat in categories]
