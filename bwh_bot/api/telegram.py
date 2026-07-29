@@ -4,17 +4,18 @@ from datetime import datetime
 import frappe
 
 COMMAND_HANDLERS = {}
+COMMAND_DESCRIPTIONS = {}
 CALLBACK_HANDLERS = {}
 
 
 def register_command(command, description=None):
 	def decorator(fn):
 		COMMAND_HANDLERS[command] = fn
+		# Keyed by command rather than stashed on the function: every conversation
+		# registers the same bound BotConversation.handle_command, so an attribute
+		# on the function is shared and the last registration wins for all of them.
 		if description:
-			try:
-				fn._description = description
-			except AttributeError:
-				fn.__func__._description = description
+			COMMAND_DESCRIPTIONS[command] = description
 		return fn
 
 	return decorator
@@ -31,7 +32,7 @@ def register_callback(prefix):
 # Importing the handler modules is what registers them: ping registers a plain
 # command, and the conversation subclasses self-register via __init_subclass__.
 from bwh_bot.conversation import CONVERSATION_HANDLERS
-from bwh_bot.handlers import leave, petty_cash, ping, wfh
+from bwh_bot.handlers import hive, leave, petty_cash, ping, wfh
 
 # Register conversation handlers into COMMAND_HANDLERS and CALLBACK_HANDLERS.
 for _handler in CONVERSATION_HANDLERS.values():

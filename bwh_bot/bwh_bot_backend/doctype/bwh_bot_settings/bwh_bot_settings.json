@@ -1,113 +1,127 @@
 {
-	"actions": [],
-	"creation": "2026-03-22 00:00:00.000000",
-	"doctype": "DocType",
-	"engine": "InnoDB",
-	"field_order": [
-		"bot_token",
-		"webhook_secret",
-		"sb_whitelisted_chats",
-		"whitelisted_chats",
-		"sb_user_mappings",
-		"user_mappings",
-		"sb_petty_cash",
-		"default_cash_account",
-		"default_company",
-		"sb_actions",
-		"webhook_url",
-		"register_webhook"
-	],
-	"fields": [
-		{
-			"fieldname": "bot_token",
-			"fieldtype": "Password",
-			"label": "Bot Token",
-			"reqd": 1
-		},
-		{
-			"fieldname": "webhook_secret",
-			"fieldtype": "Data",
-			"label": "Webhook Secret"
-		},
-		{
-			"fieldname": "sb_whitelisted_chats",
-			"fieldtype": "Section Break",
-			"label": "Whitelisted Chats"
-		},
-		{
-			"fieldname": "whitelisted_chats",
-			"fieldtype": "Table",
-			"label": "Whitelisted Chats",
-			"options": "BWH Bot Whitelisted Chat"
-		},
-		{
-			"fieldname": "sb_user_mappings",
-			"fieldtype": "Section Break",
-			"label": "User Mappings"
-		},
-		{
-			"fieldname": "user_mappings",
-			"fieldtype": "Table",
-			"label": "User Mappings",
-			"options": "BWH Bot User Mapping"
-		},
-		{
-			"fieldname": "sb_petty_cash",
-			"fieldtype": "Section Break",
-			"label": "Petty Cash Settings"
-		},
-		{
-			"fieldname": "default_cash_account",
-			"fieldtype": "Link",
-			"label": "Default Cash Account",
-			"options": "Account",
-			"description": "Cash In Hand account used for monthly journal entry (credit side)"
-		},
-		{
-			"fieldname": "default_company",
-			"fieldtype": "Link",
-			"label": "Default Company",
-			"options": "Company",
-			"description": "Company for journal entry creation"
-		},
-		{
-			"fieldname": "sb_actions",
-			"fieldtype": "Section Break",
-			"label": "Actions"
-		},
-		{
-			"fieldname": "webhook_url",
-			"fieldtype": "Data",
-			"label": "Webhook URL",
-			"description": "Public URL for the webhook (e.g. tunnel URL). Leave blank to use site URL."
-		},
-		{
-			"fieldname": "register_webhook",
-			"fieldtype": "Button",
-			"label": "Register Webhook"
-		}
-	],
-	"index_web_pages_for_search": 0,
-	"issingle": 1,
-	"links": [],
-	"modified": "2026-03-22 00:00:00.000000",
-	"modified_by": "Administrator",
-	"module": "BWH Bot Backend",
-	"name": "BWH Bot Settings",
-	"owner": "Administrator",
-	"permissions": [
-		{
-			"create": 1,
-			"delete": 1,
-			"email": 1,
-			"print": 1,
-			"read": 1,
-			"role": "System Manager",
-			"share": 1,
-			"write": 1
-		}
-	],
-	"sort_field": "creation",
-	"sort_order": "DESC",
-	"states": []
+ "actions": [],
+ "creation": "2026-03-22 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "bot_token",
+  "webhook_secret",
+  "sb_whitelisted_chats",
+  "whitelisted_chats",
+  "sb_user_mappings",
+  "user_mappings",
+  "sb_hive_sites",
+  "hive_sites",
+  "sb_petty_cash",
+  "default_cash_account",
+  "default_company",
+  "sb_actions",
+  "webhook_url",
+  "register_webhook"
+ ],
+ "fields": [
+  {
+   "fieldname": "bot_token",
+   "fieldtype": "Password",
+   "label": "Bot Token",
+   "reqd": 1
+  },
+  {
+   "fieldname": "webhook_secret",
+   "fieldtype": "Data",
+   "label": "Webhook Secret"
+  },
+  {
+   "fieldname": "sb_whitelisted_chats",
+   "fieldtype": "Section Break",
+   "label": "Whitelisted Chats"
+  },
+  {
+   "fieldname": "whitelisted_chats",
+   "fieldtype": "Table",
+   "label": "Whitelisted Chats",
+   "options": "BWH Bot Whitelisted Chat"
+  },
+  {
+   "fieldname": "sb_user_mappings",
+   "fieldtype": "Section Break",
+   "label": "User Mappings"
+  },
+  {
+   "fieldname": "user_mappings",
+   "fieldtype": "Table",
+   "label": "User Mappings",
+   "options": "BWH Bot User Mapping"
+  },
+  {
+   "fieldname": "sb_petty_cash",
+   "fieldtype": "Section Break",
+   "label": "Petty Cash Settings"
+  },
+  {
+   "fieldname": "default_cash_account",
+   "fieldtype": "Link",
+   "label": "Default Cash Account",
+   "options": "Account",
+   "description": "Cash In Hand account used for monthly journal entry (credit side)"
+  },
+  {
+   "fieldname": "default_company",
+   "fieldtype": "Link",
+   "label": "Default Company",
+   "options": "Company",
+   "description": "Company for journal entry creation"
+  },
+  {
+   "fieldname": "sb_actions",
+   "fieldtype": "Section Break",
+   "label": "Actions"
+  },
+  {
+   "fieldname": "webhook_url",
+   "fieldtype": "Data",
+   "label": "Webhook URL",
+   "description": "Public URL for the webhook (e.g. tunnel URL). Leave blank to use site URL."
+  },
+  {
+   "fieldname": "register_webhook",
+   "fieldtype": "Button",
+   "label": "Register Webhook"
+  },
+  {
+   "fieldname": "sb_hive_sites",
+   "fieldtype": "Section Break",
+   "label": "Hive Sites"
+  },
+  {
+   "fieldname": "hive_sites",
+   "fieldtype": "Table",
+   "label": "Hive Sites",
+   "options": "BWH Bot Hive Site",
+   "description": "Remote Frappe sites running Hive where /hive can create tasks. Leave empty to disable the command."
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-03-22 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "BWH Bot Backend",
+ "name": "BWH Bot Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
 }

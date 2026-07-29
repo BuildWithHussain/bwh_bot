@@ -20,6 +20,10 @@ class BotConversation:
 	command_description = ""
 	title = ""
 
+	# HR-backed flows (leave, WFH, petty cash) need the sender resolved to an
+	# Employee. Flows that do not touch HR doctypes set this to False.
+	requires_employee = True
+
 	def __init_subclass__(cls, **kwargs):
 		super().__init_subclass__(**kwargs)
 		if cls.handler_name:
@@ -101,15 +105,17 @@ class BotConversation:
 		except Exception:
 			pass
 
-		employee = get_employee_from_user(frappe.session.user)
-		if not employee:
-			send_message(
-				chat_id,
-				"You are not linked to any active employee record.",
-				reply_to_message_id=message_id,
-				message_thread_id=message_thread_id,
-			)
-			return
+		employee = None
+		if self.requires_employee:
+			employee = get_employee_from_user(frappe.session.user)
+			if not employee:
+				send_message(
+					chat_id,
+					"You are not linked to any active employee record.",
+					reply_to_message_id=message_id,
+					message_thread_id=message_thread_id,
+				)
+				return
 
 		state = self.get_or_create_state(chat_id, message["from"]["id"])
 		self.update_state(state, "start", {"employee": employee, "message_thread_id": message_thread_id})
