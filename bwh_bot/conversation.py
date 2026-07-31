@@ -20,8 +20,6 @@ class BotConversation:
 	command_description = ""
 	title = ""
 
-	# HR-backed flows (leave, WFH, petty cash) need the sender resolved to an
-	# Employee. Flows that do not touch HR doctypes set this to False.
 	requires_employee = True
 
 	def __init_subclass__(cls, **kwargs):

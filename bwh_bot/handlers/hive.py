@@ -13,8 +13,6 @@ from bwh_bot.ui import (
 	to_date_buttons,
 )
 
-# Status a Telegram-created task lands in. Every other Hive Task status is a
-# valid transition target from this one.
 DEFAULT_STATUS = "To Do"
 
 
@@ -25,11 +23,7 @@ class HiveTaskConversation(BotConversation):
 	command_description = "Create a task in Hive"
 	title = "New Hive Task"
 
-	# Tasks are created on a remote Hive site over its API, so this flow needs
-	# neither Frappe HR nor Hive installed alongside the bot.
 	requires_employee = False
-
-	# --- Step 1: pick a site (skipped when only one is configured) ------------
 
 	def on_start(self, message, state, employee):
 		chat_id = message["chat"]["id"]
@@ -79,8 +73,6 @@ class HiveTaskConversation(BotConversation):
 			message_thread_id=message_thread_id,
 		)
 
-	# --- Free-text steps: title, description ---------------------------------
-
 	def on_raw_text_input(self, state, chat_id, text):
 		message_thread_id = self.get_data(state).get("message_thread_id")
 
@@ -102,11 +94,6 @@ class HiveTaskConversation(BotConversation):
 			self.update_state(state, "select_start_date", {"description": text.strip()})
 			self._prompt_start_date(state, chat_id, message_thread_id=message_thread_id)
 
-	# --- Date steps ----------------------------------------------------------
-	# Quick-pick buttons emit `from`/`to` actions (see on_action). The base class
-	# routes the "Custom date..." buttons through awaiting_from_date /
-	# awaiting_to_date and hands the parsed date to on_text_input.
-
 	def on_text_input(self, state, chat_id, date_str):
 		message_thread_id = self.get_data(state).get("message_thread_id")
 
@@ -119,8 +106,6 @@ class HiveTaskConversation(BotConversation):
 				return
 			self.update_state(state, "select_project", {"due_date": date_str})
 			self._prompt_project(state, chat_id, message_thread_id=message_thread_id)
-
-	# --- Button actions ------------------------------------------------------
 
 	def on_action(self, action, value, state, ctx):
 		chat_id, message_id, cqid = ctx["chat_id"], ctx["message_id"], ctx["callback_query_id"]
@@ -202,8 +187,6 @@ class HiveTaskConversation(BotConversation):
 			self.update_state(state, "select_assignees")
 			self._prompt_assignees(state, chat_id, message_id=message_id)
 
-	# --- Prompts -------------------------------------------------------------
-
 	def _prompt_description(self, state, chat_id, message_id=None, message_thread_id=None):
 		self._send(
 			chat_id,
@@ -270,8 +253,6 @@ class HiveTaskConversation(BotConversation):
 			)
 			return
 
-		# Cache the titles so later steps can label the chosen project without
-		# another round trip to the remote site.
 		self.update_state(
 			state,
 			state.step,
@@ -362,8 +343,6 @@ class HiveTaskConversation(BotConversation):
 			message_id=message_id,
 		)
 
-	# --- Creation ------------------------------------------------------------
-
 	def _create_task(self, state, ctx):
 		data = self.get_data(state)
 		chat_id, message_id, cqid = ctx["chat_id"], ctx["message_id"], ctx["callback_query_id"]
@@ -392,8 +371,6 @@ class HiveTaskConversation(BotConversation):
 			edit_message_text(chat_id, message_id, f"Failed to create task: {e}")
 			return
 
-		# Assignment is best-effort: the task exists on the remote site either way,
-		# so report success rather than leaving the user unsure what happened.
 		assign_note = ""
 		if assignees:
 			try:
@@ -424,8 +401,6 @@ class HiveTaskConversation(BotConversation):
 			),
 			parse_mode="HTML",
 		)
-
-	# --- Helpers -------------------------------------------------------------
 
 	def _send(self, chat_id, text, reply_markup, message_id=None, message_thread_id=None):
 		"""Edit in place when reacting to a button, otherwise post a new message."""

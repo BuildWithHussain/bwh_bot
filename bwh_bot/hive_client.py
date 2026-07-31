@@ -95,9 +95,6 @@ def task_url(site, task_name):
 	return f"{_base(site.site_url)}/app/hive-task/{task_name}"
 
 
-# --- internals -----------------------------------------------------------
-
-
 def _get(site, doctype, filters, fields, order_by, limit):
 	response = _request(
 		site,
@@ -149,11 +146,8 @@ def _error_text(response):
 	except ValueError:
 		return (response.text or "").strip()[:200]
 
-	# Frappe reports failures as `exception`, or as `exc_type` plus an `exc`
-	# traceback. Prefer the human-readable keys and never surface the traceback.
 	for key in ("exception", "message", "exc_type", "_server_messages"):
-		value = payload.get(key)
-		if value:
+		if value := payload.get(key):
 			return str(value)[:200]
 	return str(payload)[:200]
 
