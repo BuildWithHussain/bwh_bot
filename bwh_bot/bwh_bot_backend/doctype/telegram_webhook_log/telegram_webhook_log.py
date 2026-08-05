@@ -15,7 +15,11 @@ class TelegramWebhookLog(Document):
 	def after_insert(self):
 		if not self.chat_id or not is_whitelisted(self.chat_id):
 			if self.command:
-				send_message(self.chat_id, "Unauthorized. This bot only works in registered groups.", message_thread_id=self.message_thread_id)
+				send_message(
+					self.chat_id,
+					"Unauthorized. This bot only works in registered groups.",
+					message_thread_id=self.message_thread_id,
+				)
 			return
 
 		if self.update_type == "callback_query":

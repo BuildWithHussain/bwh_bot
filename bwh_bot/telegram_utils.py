@@ -11,7 +11,9 @@ def get_bot():
 	return telegram.Bot(token=token)
 
 
-def send_message(chat_id, text, parse_mode=None, reply_markup=None, reply_to_message_id=None, message_thread_id=None):
+def send_message(
+	chat_id, text, parse_mode=None, reply_markup=None, reply_to_message_id=None, message_thread_id=None
+):
 	bot = get_bot()
 	asyncio.run(
 		bot.send_message(
@@ -118,10 +120,12 @@ def get_leave_types_for_employee(employee):
 		from hrms.hr.doctype.leave_application.leave_application import get_leave_balance_on
 
 		balance = get_leave_balance_on(employee, alloc.leave_type, today)
-		result.append({
-			"leave_type": alloc.leave_type,
-			"balance": balance,
-		})
+		result.append(
+			{
+				"leave_type": alloc.leave_type,
+				"balance": balance,
+			}
+		)
 	return result
 
 

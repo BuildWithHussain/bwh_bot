@@ -10,11 +10,11 @@ class BWHBotSettings(Document):
 		url = register_webhook(self.webhook_url or None)
 
 		# Register bot commands with Telegram
-		from bwh_bot.api.telegram import COMMAND_HANDLERS
+		from bwh_bot.api.telegram import COMMAND_DESCRIPTIONS, COMMAND_HANDLERS
 
 		commands = []
-		for cmd, fn in COMMAND_HANDLERS.items():
-			desc = getattr(fn, "_description", f"Run {cmd}")
+		for cmd in COMMAND_HANDLERS:
+			desc = COMMAND_DESCRIPTIONS.get(cmd, f"Run {cmd}")
 			commands.append((cmd.lstrip("/"), desc))
 
 		if commands:

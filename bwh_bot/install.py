@@ -29,4 +29,10 @@ def after_migrate():
 
 
 def _make_custom_fields():
-	create_custom_fields(CUSTOM_FIELDS, ignore_validate=True)
+	fields = {
+		doctype: definitions
+		for doctype, definitions in CUSTOM_FIELDS.items()
+		if frappe.db.exists("DocType", doctype)
+	}
+	if fields:
+		create_custom_fields(fields, ignore_validate=True)

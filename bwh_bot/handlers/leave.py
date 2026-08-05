@@ -25,7 +25,12 @@ class LeaveConversation(BotConversation):
 
 		leave_types = get_leave_types_for_employee(employee)
 		if not leave_types:
-			send_message(chat_id, "You have no leave allocations for the current period.", reply_to_message_id=message_id, message_thread_id=message_thread_id)
+			send_message(
+				chat_id,
+				"You have no leave allocations for the current period.",
+				reply_to_message_id=message_id,
+				message_thread_id=message_thread_id,
+			)
 			self.clear_state(state)
 			return
 
@@ -48,7 +53,8 @@ class LeaveConversation(BotConversation):
 			self.update_state(state, "select_from_date", {"leave_type": value})
 			answer_callback_query(cqid)
 			edit_message_text(
-				chat_id, message_id,
+				chat_id,
+				message_id,
 				f"<b>Leave Type:</b> {value}\n\nSelect <b>from date</b>:",
 				parse_mode="HTML",
 				reply_markup=make_keyboard(
@@ -62,10 +68,13 @@ class LeaveConversation(BotConversation):
 			answer_callback_query(cqid)
 			data = self.get_data(state)
 			edit_message_text(
-				chat_id, message_id,
+				chat_id,
+				message_id,
 				f"<b>Leave Type:</b> {data['leave_type']}\n<b>From:</b> {value}\n\nSelect <b>to date</b>:",
 				parse_mode="HTML",
-				reply_markup=make_keyboard(to_date_buttons(self.callback_prefix, value), nav_buttons(self.callback_prefix)),
+				reply_markup=make_keyboard(
+					to_date_buttons(self.callback_prefix, value), nav_buttons(self.callback_prefix)
+				),
 			)
 
 		elif action == "to":
@@ -95,7 +104,8 @@ class LeaveConversation(BotConversation):
 			self.update_state(state, "select_leave_type")
 			buttons = self._leave_type_buttons(leave_types)
 			edit_message_text(
-				chat_id, message_id,
+				chat_id,
+				message_id,
 				f"<b>{self.title}</b>\n\nSelect leave type:",
 				parse_mode="HTML",
 				reply_markup=make_keyboard(buttons, nav_buttons(self.callback_prefix, show_back=False)),
@@ -104,7 +114,8 @@ class LeaveConversation(BotConversation):
 		elif step == "select_to_date":
 			self.update_state(state, "select_from_date")
 			edit_message_text(
-				chat_id, message_id,
+				chat_id,
+				message_id,
 				f"<b>Leave Type:</b> {data['leave_type']}\n\nSelect <b>from date</b>:",
 				parse_mode="HTML",
 				reply_markup=make_keyboard(
@@ -116,10 +127,14 @@ class LeaveConversation(BotConversation):
 		elif step == "confirm":
 			self.update_state(state, "select_to_date", {"half_day": False})
 			edit_message_text(
-				chat_id, message_id,
+				chat_id,
+				message_id,
 				f"<b>Leave Type:</b> {data['leave_type']}\n<b>From:</b> {data['from_date']}\n\nSelect <b>to date</b>:",
 				parse_mode="HTML",
-				reply_markup=make_keyboard(to_date_buttons(self.callback_prefix, data["from_date"]), nav_buttons(self.callback_prefix)),
+				reply_markup=make_keyboard(
+					to_date_buttons(self.callback_prefix, data["from_date"]),
+					nav_buttons(self.callback_prefix),
+				),
 			)
 
 	def on_text_input(self, state, chat_id, date_str):
@@ -133,7 +148,9 @@ class LeaveConversation(BotConversation):
 				chat_id,
 				f"<b>Leave Type:</b> {data['leave_type']}\n<b>From:</b> {date_str}\n\nSelect <b>to date</b>:",
 				parse_mode="HTML",
-				reply_markup=make_keyboard(to_date_buttons(self.callback_prefix, date_str), nav_buttons(self.callback_prefix)),
+				reply_markup=make_keyboard(
+					to_date_buttons(self.callback_prefix, date_str), nav_buttons(self.callback_prefix)
+				),
 				message_thread_id=message_thread_id,
 			)
 
@@ -161,7 +178,9 @@ class LeaveConversation(BotConversation):
 		for lt in leave_types:
 			balance = int(lt["balance"]) if lt["balance"] == int(lt["balance"]) else lt["balance"]
 			label = f"{lt['leave_type']} ({balance} days)"
-			buttons.append([InlineKeyboardButton(label, callback_data=f"{self.callback_prefix}:type:{lt['leave_type']}")])
+			buttons.append(
+				[InlineKeyboardButton(label, callback_data=f"{self.callback_prefix}:type:{lt['leave_type']}")]
+			)
 		return buttons
 
 	def _summary_text(self, data):
@@ -185,16 +204,22 @@ class LeaveConversation(BotConversation):
 		p = self.callback_prefix
 		return [
 			[
-				InlineKeyboardButton(f"{'✅ Half Day' if half_day else 'Half Day'}", callback_data=f"{p}:half_day:1"),
-				InlineKeyboardButton(f"{'Full Day' if half_day else '✅ Full Day'}", callback_data=f"{p}:half_day:0"),
+				InlineKeyboardButton(
+					f"{'✅ Half Day' if half_day else 'Half Day'}", callback_data=f"{p}:half_day:1"
+				),
+				InlineKeyboardButton(
+					f"{'Full Day' if half_day else '✅ Full Day'}", callback_data=f"{p}:half_day:0"
+				),
 			],
 			[InlineKeyboardButton("Confirm & Submit", callback_data=f"{p}:confirm")],
-		] + nav_buttons(p)
+			*nav_buttons(p),
+		]
 
 	def _show_summary(self, state, chat_id, message_id):
 		data = self.get_data(state)
 		edit_message_text(
-			chat_id, message_id,
+			chat_id,
+			message_id,
 			self._summary_text(data),
 			parse_mode="HTML",
 			reply_markup=make_keyboard(self._summary_buttons(data)),
@@ -207,15 +232,17 @@ class LeaveConversation(BotConversation):
 
 		try:
 			frappe.db.savepoint("before_leave_application")
-			leave_app = frappe.get_doc({
-				"doctype": "Leave Application",
-				"employee": data["employee"],
-				"leave_type": data["leave_type"],
-				"from_date": data["from_date"],
-				"to_date": data["to_date"],
-				"status": "Open",
-				"follow_via_email": 0,
-			})
+			leave_app = frappe.get_doc(
+				{
+					"doctype": "Leave Application",
+					"employee": data["employee"],
+					"leave_type": data["leave_type"],
+					"from_date": data["from_date"],
+					"to_date": data["to_date"],
+					"status": "Open",
+					"follow_via_email": 0,
+				}
+			)
 			if data.get("half_day"):
 				leave_app.half_day = 1
 				leave_app.half_day_date = data["from_date"]
@@ -224,7 +251,8 @@ class LeaveConversation(BotConversation):
 
 			answer_callback_query(cqid, "Leave application created!")
 			edit_message_text(
-				chat_id, message_id,
+				chat_id,
+				message_id,
 				(
 					f"<b>Leave Application Created</b>\n\n"
 					f"<b>ID:</b> {leave_app.name}\n"
@@ -239,7 +267,12 @@ class LeaveConversation(BotConversation):
 		except Exception as e:
 			frappe.db.rollback(save_point="before_leave_application")
 			answer_callback_query(cqid, "Failed to create leave application.", show_alert=True)
-			edit_message_text(chat_id, message_id, f"Failed to create leave application:\n<code>{e}</code>", parse_mode="HTML")
+			edit_message_text(
+				chat_id,
+				message_id,
+				f"Failed to create leave application:\n<code>{e}</code>",
+				parse_mode="HTML",
+			)
 
 
 # --- Doc Event Handler ---

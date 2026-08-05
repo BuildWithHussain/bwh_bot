@@ -114,29 +114,35 @@ def create_monthly_petty_cash_journal_entry():
 			)
 			continue
 
-		accounts.append({
-			"account": category_account,
-			"debit_in_account_currency": row.total,
-			"credit_in_account_currency": 0,
-		})
+		accounts.append(
+			{
+				"account": category_account,
+				"debit_in_account_currency": row.total,
+				"credit_in_account_currency": 0,
+			}
+		)
 		grand_total += row.total
 
 	if not accounts:
 		return
 
 	# Credit side: Cash In Hand
-	accounts.append({
-		"account": cash_account,
-		"debit_in_account_currency": 0,
-		"credit_in_account_currency": grand_total,
-	})
+	accounts.append(
+		{
+			"account": cash_account,
+			"debit_in_account_currency": 0,
+			"credit_in_account_currency": grand_total,
+		}
+	)
 
-	jv = frappe.get_doc({
-		"doctype": "Journal Entry",
-		"posting_date": to_date,
-		"company": company,
-		"voucher_type": "Journal Entry",
-		"user_remark": f"Petty Cash Summary for {month_label}",
-		"accounts": accounts,
-	})
+	jv = frappe.get_doc(
+		{
+			"doctype": "Journal Entry",
+			"posting_date": to_date,
+			"company": company,
+			"voucher_type": "Journal Entry",
+			"user_remark": f"Petty Cash Summary for {month_label}",
+			"accounts": accounts,
+		}
+	)
 	jv.insert()
