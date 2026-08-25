@@ -239,6 +239,7 @@ class LeaveConversation(BotConversation):
 					"leave_type": data["leave_type"],
 					"from_date": data["from_date"],
 					"to_date": data["to_date"],
+					"leave_approver": get_leave_approver(data["employee"]),
 					"status": "Open",
 					"follow_via_email": 0,
 				}
@@ -273,6 +274,28 @@ class LeaveConversation(BotConversation):
 				f"Failed to create leave application:\n<code>{e}</code>",
 				parse_mode="HTML",
 			)
+
+
+def get_leave_approver(employee):
+	"""Resolve the leave approver the same way Frappe HR does for the desk form.
+
+	Frappe HR validates on the server that this is set (when
+	`leave_approver_mandatory_in_leave_application` is on in HR Settings), so the
+	bot has to fill it in like the desk form does.
+	"""
+	from hrms.hr.doctype.leave_application.leave_application import get_employee_leave_approver
+
+	approver = get_employee_leave_approver(employee)
+	if not approver and frappe.db.get_single_value(
+		"HR Settings", "leave_approver_mandatory_in_leave_application"
+	):
+		frappe.throw(
+			frappe._(
+				"No leave approver is set for you. Ask HR to set one on your Employee record or department."
+			)
+		)
+
+	return approver
 
 
 # --- Doc Event Handler ---
